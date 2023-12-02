@@ -1,3 +1,4 @@
+import { PhotoReviews } from '#/photo_reviews/entities/photo_reviews.entity'
 import { Users } from '#/users/entities/user.entity'
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -46,4 +48,7 @@ export class Reviews {
 
   @ManyToOne(() => Users, (user) => user.reviews)
   user: Users
+
+  @OneToMany(() => PhotoReviews, (photoReviews) => photoReviews.reviews)
+  photoReviews: PhotoReviews
 }

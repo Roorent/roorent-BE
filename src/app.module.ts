@@ -16,6 +16,9 @@ import { SpecialRulesModule } from './special_rules/special_rules.module'
 import { BanksModule } from './banks/banks.module'
 import { ProductDescriptionsModule } from './product_descriptions/product_descriptions.module'
 import { CitiesModule } from './cities/cities.module';
+import { ProductsModule } from './products/products.module';
+import { PhotoProductsModule } from './photo_products/photo_products.module';
+import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module';
 
 @Module({
   imports: [
@@ -110,6 +113,9 @@ import { CitiesModule } from './cities/cities.module';
     SpecialRulesModule,
     BanksModule,
     CitiesModule,
+    ProductsModule,
+    PhotoProductsModule,
+    PhotoReviewsModule,
   ],
 })
 export class AppModule {}

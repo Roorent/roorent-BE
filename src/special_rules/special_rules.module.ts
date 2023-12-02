@@ -7,6 +7,7 @@ import { SpecialRules } from './entities/special_rules.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([SpecialRules])],
   controllers: [SpecialRulesController],
-  providers: [SpecialRulesService]
+  providers: [SpecialRulesService],
+  exports: [SpecialRulesService]
 })
 export class SpecialRulesModule {}

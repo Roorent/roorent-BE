@@ -1,8 +1,10 @@
+import { Products } from '#/products/enitities/products.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -36,5 +38,8 @@ export class Cities {
 
   @VersionColumn()
   version: number;
+
+  @OneToMany(() => Products, (products) => products.cities)
+  products: Products[];
 
 }
