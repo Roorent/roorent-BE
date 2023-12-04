@@ -32,8 +32,8 @@ export class PhotoReviewsController {
   }
 
   @Post()
-  async create(@Body() createPhotoReviewsDTO: CreatePhotoReviewsDTO) {
-    const data = await this.photoReviewsService.create(createPhotoReviewsDTO)
+  async create(@Body() payload: CreatePhotoReviewsDTO) {
+    const data = await this.photoReviewsService.create(payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -45,11 +45,11 @@ export class PhotoReviewsController {
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updatePhotoReviewsDTO: UpdatePhotoReviewsDTO,
+    @Body() payload: UpdatePhotoReviewsDTO,
   ) {
     const data = await this.photoReviewsService.update(
       id,
-      updatePhotoReviewsDTO,
+      payload,
     )
 
     return {

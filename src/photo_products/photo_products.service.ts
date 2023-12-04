@@ -11,7 +11,7 @@ export class PhotoProductsService {
   constructor(
     @InjectRepository(PhotoProducts)
     private photoProductsRepository: Repository<PhotoProducts>,
-    private productsRepository: ProductsService,
+    private productsService: ProductsService,
   ) {}
 
   findAll() {
@@ -43,20 +43,20 @@ export class PhotoProductsService {
     }
   }
 
-  async create(createPhotoProductsDTO: CreatePhotoProductsDTO) {
+  async create(payload: CreatePhotoProductsDTO) {
    try {
-    const findOneProductId: any = await this.productsRepository.findOneById(
-      createPhotoProductsDTO.product_id
+    const findOneProductId: any = await this.productsService.findOneById(
+      payload.product_id
     )
 
     const photoProductsEntity = new PhotoProducts()
-    if (Array.isArray(createPhotoProductsDTO.photo)) {
-      photoProductsEntity.photo = createPhotoProductsDTO.photo;
+    if (Array.isArray(payload.photo)) {
+      photoProductsEntity.photo = payload.photo;
     } else {
-      photoProductsEntity.photo = [createPhotoProductsDTO.photo];
+      photoProductsEntity.photo = [payload.photo];
     }
     
-    // photoProductsEntity.photo = createPhotoProductsDTO.photo
+    // photoProductsEntity.photo = payload.photo
     photoProductsEntity.products = findOneProductId
 
     const insertPhotoProducts = await this.photoProductsRepository.insert(photoProductsEntity)
@@ -70,17 +70,17 @@ export class PhotoProductsService {
    }
   }
 
-  async update(id: string, updatePhotoProductsDTO: UpdatePhotoProductsDTO) {
+  async update(id: string, payload: UpdatePhotoProductsDTO) {
     try {
       await this.findOneById(id)
 
       const photoProductsEntity = new PhotoProducts()
-      if (Array.isArray(updatePhotoProductsDTO.photo)) {
-        photoProductsEntity.photo = updatePhotoProductsDTO.photo;
+      if (Array.isArray(payload.photo)) {
+        photoProductsEntity.photo = payload.photo;
       } else {
-        photoProductsEntity.photo = [updatePhotoProductsDTO.photo];
+        photoProductsEntity.photo = [payload.photo];
       }
-      // photoProductsEntity.photo = updatePhotoProductsDTO.photo
+      // photoProductsEntity.photo = payload.photo
 
       await this.photoProductsRepository.update(id, photoProductsEntity)
 

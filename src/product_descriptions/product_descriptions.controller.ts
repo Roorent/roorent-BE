@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { ProductDescriptionsService } from './product_descriptions.service';
 import { CreateProductDescriptionsDTO } from './dto/create-product_descriptions.dto';
-import {  UpdateProductDescriptionsDTO} from './dto/update-product_descriptions.dto';
+import { UpdateProductDescriptionsDTO} from './dto/update-product_descriptions.dto';
 
 @Controller('product-descriptions')
 export class ProductDescriptionsController {
@@ -20,9 +20,9 @@ export class ProductDescriptionsController {
     }
 
     @Post()
-    async create(@Body() createProductDescriptionsDTO: CreateProductDescriptionsDTO){
+    async create(@Body() payload: CreateProductDescriptionsDTO){
         return {
-            data: await this.productDescriptionsService.create(createProductDescriptionsDTO),
+            data: await this.productDescriptionsService.create(payload),
             statusCode: HttpStatus.CREATED,
             message: 'success',
         }
@@ -38,9 +38,9 @@ export class ProductDescriptionsController {
     }
 
     @Put(':id')
-    async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateProductDescriptionsDTO: UpdateProductDescriptionsDTO){
+    async update(@Param('id', ParseUUIDPipe) id: string, @Body() payload: UpdateProductDescriptionsDTO){
         return {
-            data: await this.productDescriptionsService.update(id, updateProductDescriptionsDTO),
+            data: await this.productDescriptionsService.update(id, payload),
             statusCode: HttpStatus.OK,
             message: 'success',
         }

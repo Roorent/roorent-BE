@@ -11,7 +11,7 @@ export class BanksService {
   constructor(
     @InjectRepository(Banks)
     private banksRepository: Repository<Banks>,
-    private usersRepository: UsersService,
+    private usersService: UsersService,
   ) {}
 
   findAll() {
@@ -22,16 +22,16 @@ export class BanksService {
     })
   }
 
-  async create(createBanksDTO: CreateBanksDTO) {
+  async create(payload: CreateBanksDTO) {
     try {
-      const findOneUserId = await this.usersRepository.findOne(
-        createBanksDTO.user_id,
+      const findOneUserId = await this.usersService.findOne(
+        payload.user_id,
       )
 
       const banksEntity = new Banks()
-      banksEntity.bank_name = createBanksDTO.bank_name
-      banksEntity.acc_name = createBanksDTO.acc_name
-      banksEntity.acc_number = createBanksDTO.acc_number
+      banksEntity.bank_name = payload.bank_name
+      banksEntity.acc_name = payload.acc_name
+      banksEntity.acc_number = payload.acc_number
       banksEntity.user = findOneUserId
 
       const insertBanks = await this.banksRepository.insert(banksEntity)
@@ -66,14 +66,14 @@ export class BanksService {
     }
   }
 
-  async update(id: string, updateBanksDTO: UpdateBanksDTO) {
+  async update(id: string, payload: UpdateBanksDTO) {
     try {
       await this.findOneById(id)
 
       const banksEntity = new Banks()
-      banksEntity.bank_name = updateBanksDTO.bank_name
-      banksEntity.acc_name = updateBanksDTO.acc_name
-      banksEntity.acc_number = updateBanksDTO.acc_number
+      banksEntity.bank_name = payload.bank_name
+      banksEntity.acc_name = payload.acc_name
+      banksEntity.acc_number = payload.acc_number
 
       await this.banksRepository.update(id, banksEntity)
 

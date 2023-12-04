@@ -14,10 +14,10 @@ export class ProductsService {
   constructor(
     @InjectRepository(Products)
     private productsRepository: Repository<Products>,
-    private userRepository: UsersService,
-    private citiesRepository: CitiesService,
-    private productDescriptionsRepository: ProductDescriptionsService,
-    private specialRulesRepository: SpecialRulesService,
+    private userService: UsersService,
+    private citiesService: CitiesService,
+    private productDescriptionsService: ProductDescriptionsService,
+    private specialRulesService: SpecialRulesService,
   ) {}
 
   findAll() {
@@ -54,31 +54,31 @@ export class ProductsService {
     }
   }
 
-  async create(createProductsDTO: CreateProductsDTO) {
+  async create(payload: CreateProductsDTO) {
     try {
-      const findOneUserId = await this.userRepository.findOne(
-        createProductsDTO.user_id,
+      const findOneUserId = await this.userService.findOne(
+        payload.user_id,
       )
-      const findOneCityId = await this.citiesRepository.findOne(
-        createProductsDTO.city_id,
+      const findOneCityId = await this.citiesService.findOne(
+        payload.city_id,
       )
       const findOneProductDescriptionsId =
-        await this.productDescriptionsRepository.findOne(
-          createProductsDTO.product_desc_id,
+        await this.productDescriptionsService.findOne(
+          payload.product_desc_id,
         )
-      const findOneSpecialRulesId = await this.specialRulesRepository.findOne(
-        createProductsDTO.special_rules_id,
+      const findOneSpecialRulesId = await this.specialRulesService.findOne(
+        payload.special_rules_id,
       )
 
       const productsEntity = new Products()
-      productsEntity.name = createProductsDTO.name
-      productsEntity.type = createProductsDTO.type
-      productsEntity.stock = createProductsDTO.stock
-      productsEntity.daily_price = createProductsDTO.daily_price
-      productsEntity.monthly_price = createProductsDTO.monthly_price
-      productsEntity.address = createProductsDTO.address
-      productsEntity.latitude = createProductsDTO.latitude
-      productsEntity.longitude = createProductsDTO.longitude
+      productsEntity.name = payload.name
+      productsEntity.type = payload.type
+      productsEntity.stock = payload.stock
+      productsEntity.daily_price = payload.daily_price
+      productsEntity.monthly_price = payload.monthly_price
+      productsEntity.address = payload.address
+      productsEntity.latitude = payload.latitude
+      productsEntity.longitude = payload.longitude
       productsEntity.user = findOneUserId
       productsEntity.cities = findOneCityId
       productsEntity.productDescriptions = findOneProductDescriptionsId
@@ -95,19 +95,19 @@ export class ProductsService {
     }
   }
 
-  async update(id: string, updateProductsDTO: UpdateProductsDTO) {
+  async update(id: string, payload:  UpdateProductsDTO) {
     try {
       await this.findOneById(id)
 
       const productsEntity = new Products()
-      productsEntity.name = updateProductsDTO.name
-      productsEntity.type = updateProductsDTO.type
-      productsEntity.stock = updateProductsDTO.stock
-      productsEntity.daily_price = updateProductsDTO.daily_price
-      productsEntity.monthly_price = updateProductsDTO.monthly_price
-      productsEntity.address = updateProductsDTO.address
-      productsEntity.latitude = updateProductsDTO.latitude
-      productsEntity.longitude = updateProductsDTO.longitude
+      productsEntity.name = payload.name
+      productsEntity.type = payload.type
+      productsEntity.stock = payload.stock
+      productsEntity.daily_price = payload.daily_price
+      productsEntity.monthly_price = payload.monthly_price
+      productsEntity.address = payload.address
+      productsEntity.latitude = payload.latitude
+      productsEntity.longitude = payload.longitude
 
       await this.productsRepository.update(id, productsEntity)
 

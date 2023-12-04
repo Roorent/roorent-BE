@@ -11,7 +11,7 @@ export class PhotoReviewsService {
   constructor(
     @InjectRepository(PhotoReviews)
     private  photoReviewsRepository: Repository<PhotoReviews>,
-    private reviewsRepository: ReviewsService,
+    private reviewsService: ReviewsService,
   ){}
 
   findAll(page: number = 1 , limit: number = 10){
@@ -45,20 +45,20 @@ export class PhotoReviewsService {
   }
 }
 
-async create(createPhotoReviewsDTO: CreatePhotoReviewsDTO){
+async create(payload: CreatePhotoReviewsDTO){
   try {
-    const findOneReviewId: any = await this.reviewsRepository.findOne(
-      createPhotoReviewsDTO.review_id
+    const findOneReviewId: any = await this.reviewsService.findOne(
+      payload.review_id
     )
 
     const photoReviewsEntity = new PhotoReviews()
-    if (Array.isArray(createPhotoReviewsDTO.photo)) {
-      photoReviewsEntity.photo = createPhotoReviewsDTO.photo;
+    if (Array.isArray(payload.photo)) {
+      photoReviewsEntity.photo = payload.photo;
     } else {
-      photoReviewsEntity.photo = [createPhotoReviewsDTO.photo];
+      photoReviewsEntity.photo = [payload.photo];
     }
     
-    // photoReviewsEntity.photo = createPhotoReviewsDTO.photo
+    // photoReviewsEntity.photo = payload.photo
     photoReviewsEntity.reviews = findOneReviewId
 
     const insertPhotoReviews = await this.photoReviewsRepository.insert(photoReviewsEntity)
@@ -72,15 +72,15 @@ async create(createPhotoReviewsDTO: CreatePhotoReviewsDTO){
    }
 }
 
-async update(id: string, updatePhotoReviewsDTO: UpdatePhotoReviewsDTO) {
+async update(id: string, payload: UpdatePhotoReviewsDTO) {
   try {
     await this.findOneById(id)
 
     const photoReviewsEntity = new PhotoReviews()
-    if (Array.isArray(updatePhotoReviewsDTO.photo)) {
-      photoReviewsEntity.photo = updatePhotoReviewsDTO.photo;
+    if (Array.isArray(payload.photo)) {
+      photoReviewsEntity.photo = payload.photo;
     } else {
-      photoReviewsEntity.photo = [updatePhotoReviewsDTO.photo];
+      photoReviewsEntity.photo = [payload.photo];
     }
     // photoReviewsEntity.photo = updatePhotoProductsDTO.photo
 

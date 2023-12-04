@@ -24,8 +24,8 @@ export class BanksController {
     }
 
     @Post()
-    async create(@Body() createBanksDTO: CreateBanksDTO){
-        const data = await this.banksService.create(createBanksDTO)
+    async create(@Body() payload: CreateBanksDTO){
+        const data = await this.banksService.create(payload)
 
         return{
             statusCode: HttpStatus.CREATED,
@@ -44,8 +44,8 @@ export class BanksController {
     }
 
     @Put(':id')
-    async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateBanksDTO: UpdateBanksDTO){
-        const data = await this.banksService.update(id, updateBanksDTO)
+    async update(@Param('id', ParseUUIDPipe) id: string, @Body() payload: UpdateBanksDTO){
+        const data = await this.banksService.update(id, payload)
 
         return{
             statusCode: HttpStatus.OK,

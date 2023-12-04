@@ -34,8 +34,8 @@ export class ProductsController {
   }
 
   @Post()
-  async create(@Body() createProductsDTO: CreateProductsDTO) {
-    const data = await this.productsService.create(createProductsDTO)
+  async create(@Body() payload: CreateProductsDTO) {
+    const data = await this.productsService.create(payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -56,9 +56,9 @@ export class ProductsController {
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() UpdateProductsDTO: UpdateProductsDTO,
+    @Body() payload: UpdateProductsDTO,
   ) {
-    const data = await this.productsService.update(id, UpdateProductsDTO)
+    const data = await this.productsService.update(id, payload)
 
     return {
       statusCode: HttpStatus.OK,

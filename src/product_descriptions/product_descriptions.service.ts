@@ -16,8 +16,8 @@ export class ProductDescriptionsService{
         return this.productDescriptionsRepository.findAndCount();
     }
 
-    async create(createProductDescriptionsDTO: CreateProductDescriptionsDTO) {
-        const result = await this.productDescriptionsRepository.insert(createProductDescriptionsDTO);
+    async create(payload: CreateProductDescriptionsDTO) {
+        const result = await this.productDescriptionsRepository.insert(payload);
 
         return this.productDescriptionsRepository.findOneOrFail({
             where: {
@@ -48,7 +48,7 @@ export class ProductDescriptionsService{
         }
     }
 
-    async update(id: string, updateProductDescriptionsDTO: UpdateProductDescriptionsDTO){
+    async update(id: string, payload: UpdateProductDescriptionsDTO){
         try {
             await this.productDescriptionsRepository.findOneOrFail({
                 where: {id},
@@ -67,7 +67,7 @@ export class ProductDescriptionsService{
             }
         }
 
-        await this.productDescriptionsRepository.update(id, updateProductDescriptionsDTO);
+        await this.productDescriptionsRepository.update(id, payload);
 
         return this.productDescriptionsRepository.findOneOrFail({
             where: {id,},
