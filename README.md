@@ -10,11 +10,11 @@
 
 - Clone menggunakan HTTP
 ```bash
-$ git clone -b development https://github.com/maulanadata/roorent-BE.git
+$ git clone -b development https://github.com/Roorent/roorent-BE.git
 ```
 - Clone menggunakan SSH
 ```bash
-$ git clone -b development git@github.com:maulanadata/roorent-BE.git
+$ git clone -b development git@github.com:Roorent/roorent-BE.git
 ```
 
 nb: code diatas akan mengambil repository dengan branch <b>development</b>.
