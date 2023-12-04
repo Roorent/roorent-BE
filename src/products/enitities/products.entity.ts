@@ -1,4 +1,5 @@
 import { Cities } from '#/cities/entities/cities.entity'
+import { Favorits } from '#/fav_product/entities/favorits.entity'
 import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
 import { ProductDescriptions } from '#/product_descriptions/entities/product_descriptions.entity'
 import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
@@ -109,4 +110,7 @@ export class Products {
 
   @ManyToOne(() => Cities, (cities) => cities.products)
   cities: Cities
+
+  @OneToMany(() => Favorits, (favorit)=> favorit.product)
+  favorit: Favorits[];
 }

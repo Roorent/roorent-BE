@@ -19,6 +19,7 @@ import { CitiesModule } from './cities/cities.module';
 import { ProductsModule } from './products/products.module';
 import { PhotoProductsModule } from './photo_products/photo_products.module';
 import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module';
+import { FavProductModule } from './fav_product/favorits.module';
 
 @Module({
   imports: [
@@ -115,7 +116,8 @@ import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module';
     CitiesModule,
     ProductsModule,
     PhotoProductsModule,
-    PhotoReviewsModule,
+    FavProductModule,
+    PhotoReviewsModule
   ],
 })
 export class AppModule {}

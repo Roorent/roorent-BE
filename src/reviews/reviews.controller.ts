@@ -23,7 +23,7 @@ export class ReviewsController {
 
     return {
       statusCode: HttpStatus.OK,
-      messae: 'Success',
+      message: 'Success',
       count,
       data,
     }

@@ -1,5 +1,6 @@
 import { Banks } from '#/banks/entities/banks.entity';
 import { Biodatas } from '#/biodatas/entities/biodatas.entity';
+import { Favorits } from '#/fav_product/entities/favorits.entity';
 import { Levels } from '#/levels/entities/level.entity';
 import { Products } from '#/products/enitities/products.entity';
 import { Reviews } from '#/reviews/entities/reviews.entity';
@@ -67,4 +68,7 @@ export class Users {
 
   @OneToMany(() => Products, (products) => products.user)
   products: Products;
+
+  @OneToMany(() => Favorits, (favorit)=> favorit.user)
+  favorit: Favorits[];
 }
