@@ -14,8 +14,10 @@ export class BanksService {
     private usersService: UsersService,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1 , limit: number = 10) {
     return this.banksRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
       relations: {
         user: true,
       },

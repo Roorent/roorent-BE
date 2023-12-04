@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common'
 import { PhotoProductsService } from './photo_products.service'
 import { HttpStatusCode } from 'axios'
@@ -19,8 +20,8 @@ export class PhotoProductsController {
   constructor(private photoProductsService: PhotoProductsService) {}
 
   @Get()
-  async getAllPhotoProducts() {
-    const [data, count] = await this.photoProductsService.findAll()
+  async getAllPhotoProducts(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.photoProductsService.findAll(page, limit)
 
     return {
       statusCode: HttpStatusCode.Ok,

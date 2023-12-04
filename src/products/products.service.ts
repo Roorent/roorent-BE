@@ -20,8 +20,10 @@ export class ProductsService {
     private specialRulesService: SpecialRulesService,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1 , limit: number = 10) {
     return this.productsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
       relations: {
         user: true,
         cities: true,

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { BanksService } from './banks.service';
 import { HttpStatusCode } from 'axios';
 import { CreateBanksDTO } from './dto/create-banks.dto';
@@ -11,8 +11,8 @@ export class BanksController {
     ){}
 
     @Get()
-    async getAll(){
-        const [data, count] = await this.banksService.findAll();
+    async getAll(@Query('page') page: number, @Query('limit') limit: number){
+        const [data, count] = await this.banksService.findAll(page, limit);
 
         return{
             statusCode: HttpStatusCode.Ok,

@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common'
 import { ReviewsService } from './reviews.service'
 import { CreateReviewDTO } from './dto/create-review.dto'
@@ -18,8 +19,8 @@ export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
   @Get()
-  async findAll() {
-    const [data, count] = await this.reviewService.findAll()
+  async findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.reviewService.findAll(page, limit)
 
     return {
       statusCode: HttpStatus.OK,

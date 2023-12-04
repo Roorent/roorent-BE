@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ProductDescriptionsService } from './product_descriptions.service';
 import { CreateProductDescriptionsDTO } from './dto/create-product_descriptions.dto';
 import { UpdateProductDescriptionsDTO} from './dto/update-product_descriptions.dto';
@@ -8,8 +8,8 @@ export class ProductDescriptionsController {
     constructor(private readonly productDescriptionsService: ProductDescriptionsService){}
 
     @Get()
-    async getAll(){
-        const [data, count] = await this.productDescriptionsService.findAll();
+    async getAll(@Query('page') page: number, @Query('limit') limit: number){
+        const [data, count] = await this.productDescriptionsService.findAll(page, limit);
 
         return{
             data,

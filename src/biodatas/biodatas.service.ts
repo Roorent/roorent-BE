@@ -12,8 +12,11 @@ export class BiodatasService {
     private biodatasRepository: Repository<Biodatas>,
   ) {}
 
-  findAll() {
-    return this.biodatasRepository.findAndCount();
+  findAll(page: number = 1 , limit: number = 10) {
+    return this.biodatasRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+    });
   }
 
   async create(payload: CreateBiodatasDTO) {

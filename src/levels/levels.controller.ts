@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common'
 import { LevelsService } from './levels.service'
 
@@ -13,8 +14,8 @@ export class LevelsController {
   constructor(private readonly levelsService: LevelsService) {}
 
   @Get()
-  async findAll() {
-    const [data, count] = await this.levelsService.findAll()
+  async findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.levelsService.findAll(page, limit)
 
     return {
       statusCode: HttpStatus.OK,
