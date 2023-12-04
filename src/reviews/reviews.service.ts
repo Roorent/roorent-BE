@@ -14,8 +14,10 @@ export class ReviewsService {
     private userService: UsersService,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1 , limit: number = 10) {
     return this.reviewsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
       relations: {
         user: true,
       },

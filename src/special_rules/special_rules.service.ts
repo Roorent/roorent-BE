@@ -12,8 +12,11 @@ export class SpecialRulesService {
     private specialRulesRepository: Repository<SpecialRules>,
   ) {}
 
-  findAll() {
-    return this.specialRulesRepository.findAndCount()
+  findAll(page: number = 1 , limit: number = 10) {
+    return this.specialRulesRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+    })
   }
 
   async create(payload: CreateSpecialRulesDto) {

@@ -12,8 +12,11 @@ export class ProductDescriptionsService{
         private productDescriptionsRepository: Repository<ProductDescriptions>
     ){}
 
-    findAll(){
-        return this.productDescriptionsRepository.findAndCount();
+    findAll(page: number = 1 , limit: number = 10){
+        return this.productDescriptionsRepository.findAndCount({
+        skip: --page * limit,
+        take: limit,
+        });
     }
 
     async create(payload: CreateProductDescriptionsDTO) {

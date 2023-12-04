@@ -10,7 +10,8 @@ import {
   Put,
   UseInterceptors,
   UploadedFile, 
-  Res
+  Res,
+  Query
 } from '@nestjs/common';
 import { BiodatasService } from './biodatas.service';
 import { CreateBiodatasDTO } from './dto/create-biodatas.dto';
@@ -47,8 +48,8 @@ export class BiodatasController {
   }
 
   @Get()
-  async getAll() {
-    const [data, count] = await this.biodatasService.findAll();
+  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.biodatasService.findAll(page, limit);
 
     return {
       statusCode: HttpStatus.OK,

@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common'
 import { SpecialRulesService } from './special_rules.service'
 import { CreateSpecialRulesDto } from './dto/create-specialRules.dto'
@@ -18,8 +19,8 @@ export class SpecialRulesController {
   constructor(private readonly specialRulesService: SpecialRulesService) {}
 
   @Get()
-  async findAll() {
-    const [data, count] = await this.specialRulesService.findAll()
+  async findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.specialRulesService.findAll(page, limit)
     return {
       statusCode: HttpStatus.OK,
       message: 'succes',

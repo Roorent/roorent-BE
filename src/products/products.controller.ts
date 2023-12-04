@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common'
 import { ProductsService } from './products.service'
 import { HttpStatusCode } from 'axios'
@@ -22,8 +23,8 @@ export class ProductsController {
   {}
 
   @Get()
-  async getAll() {
-    const [data, count] = await this.productsService.findAll()
+  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.productsService.findAll(page, limit)
 
     return {
       statusCode: HttpStatusCode.Ok,

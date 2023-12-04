@@ -14,8 +14,10 @@ export class PhotoProductsService {
     private productsService: ProductsService,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1 , limit: number = 10) {
     return this.photoProductsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
       relations: {
         products: true,
       },
