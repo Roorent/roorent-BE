@@ -13,6 +13,7 @@ import {
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { AuthGuard } from '@nestjs/passport'
+import { ApproveOwnerDTO } from './dto/approve-user.dto'
 
 @Controller('users')
 export class UsersController {
@@ -84,4 +85,17 @@ export class UsersController {
       message: 'success',
     }
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('approve/:id')
+  async approve(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: ApproveOwnerDTO)
+    {
+      return{
+        statusCode: HttpStatus.OK,
+        message: 'success',
+        data: await this.usersService.approveOwner(id, payload)
+      }
+    }
 }
