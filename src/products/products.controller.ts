@@ -75,4 +75,14 @@ export class ProductsController {
       message: await this.productsService.softDeleteById(id),
     }
   }
+
+  @Get('/find-owner/:id')
+    async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string){
+        return {
+            data : await this.productsService.listProductsByOwner(id),
+            statusCode: HttpStatus.OK,
+            message: "Success",
+        }
+    }
+
 }

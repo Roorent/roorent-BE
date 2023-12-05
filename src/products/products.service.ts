@@ -132,4 +132,23 @@ export class ProductsService {
       throw e
     }
   }
+
+  async listProductsByOwner (id: string){
+    try {
+      const owner = await this.userService.findOne(id)
+      return await this.productsRepository.findOneOrFail({
+        where:{user: {id:owner.id}}
+      })
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw e
+      }
+    }
+  }
+
 }
