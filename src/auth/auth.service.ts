@@ -143,7 +143,7 @@ export class AuthService {
 
       const levelId: any = findLevelUser.id
 
-      const isActive:any = "active"
+      const isActive: any = 'active'
 
       const saltGenerate = await bcrypt.genSalt()
       const hash = await bcrypt.hash(payload.password, saltGenerate)
