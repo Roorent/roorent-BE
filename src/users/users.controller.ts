@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Query,
   UseGuards,
+  Patch,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -47,6 +48,28 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: 'success',
       count,
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/nonactive/:id')
+  async getNonactive(@Param('id', ParseUUIDPipe) id: string, @Body('isActive') isActive: string){
+    const data = await this.usersService.getNonactive(id, isActive)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/reactive/:id')
+  async getReactive(@Param('id', ParseUUIDPipe) id: string, @Body('isActive') isActive: string){
+    const data = await this.usersService.getReactive(id, isActive)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
       data,
     }
   }

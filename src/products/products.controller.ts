@@ -44,14 +44,22 @@ export class ProductsController {
     }
   }
 
-  @Get(':id')
-  async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'succes',
-      data: await this.productsService.findOneById(id),
-    }
+  
+  @Get('/search')
+  async listProductsWithSearch(
+    @Query('s') searchCriteria: string,
+  ) {
+    return this.productsService.listProductsWithSearch(searchCriteria);
   }
+
+  // @Get(':id')
+  // async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     message: 'succes',
+  //     data: await this.productsService.findOneById(id),
+  //   }
+  // }
 
   @Put(':id')
   async update(
@@ -90,4 +98,5 @@ export class ProductsController {
       message: await this.productsService.deactivateProductOwner(id),
     }
   }
+
 }

@@ -1,13 +1,14 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Products } from './enitities/products.entity'
-import { EntityNotFoundError, Repository } from 'typeorm'
+import { DataSource, EntityNotFoundError, Repository } from 'typeorm'
 import { UsersService } from '#/users/users.service'
 import { CreateProductsDTO } from './dto/create-products.dto'
 import { CitiesService } from '#/cities/cities.service'
 import { SpecialRulesService } from '#/special_rules/special_rules.service'
 import { ProductDescriptionsService } from '#/product_descriptions/product_descriptions.service'
 import { UpdateProductsDTO } from './dto/update-products.dto'
+import { ILike } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -156,8 +157,29 @@ export class ProductsService {
         statusCode: HttpStatus.OK,
         message: 'Owner products deactivated successfully',
       }
-    } catch (e) {
-      throw e
+    } catch (err) {
+      throw err
     }
+  }
+
+  async listProductsWithSearch(
+    searchCriteria: string,
+
+  ) {
+    const data = await this.productsRepository.findOne({
+      where: {
+        // { name: ILike(`%${searchCriteria}#%`) }, // Use ILike from TypeORM
+         type: ILike(`%${searchCriteria} #%`) }
+        // { address: ILike(`%${searchCriteria}#%`) },
+        // { cities: ILike(`%${searchCriteria}#%`) },
+        // Add other criteria for search based on your entity properties
+      // ],
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    };
   }
 }
