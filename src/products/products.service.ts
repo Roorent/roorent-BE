@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Products } from './enitities/products.entity'
-import { EntityNotFoundError, Repository } from 'typeorm'
+import { Like, EntityNotFoundError, Repository } from 'typeorm'
 import { UsersService } from '#/users/users.service'
 import { CreateProductsDTO } from './dto/create-products.dto'
 import { CitiesService } from '#/cities/cities.service'
@@ -20,7 +20,7 @@ export class ProductsService {
     private specialRulesService: SpecialRulesService,
   ) {}
 
-  findAll(page: number = 1 , limit: number = 10) {
+  findAll(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
       skip: --page * limit,
       take: limit,
@@ -58,16 +58,10 @@ export class ProductsService {
 
   async create(payload: CreateProductsDTO) {
     try {
-      const findOneUserId = await this.userService.findOne(
-        payload.user_id,
-      )
-      const findOneCityId = await this.citiesService.findOne(
-        payload.city_id,
-      )
+      const findOneUserId = await this.userService.findOne(payload.user_id)
+      const findOneCityId = await this.citiesService.findOne(payload.city_id)
       const findOneProductDescriptionsId =
-        await this.productDescriptionsService.findOne(
-          payload.product_desc_id,
-        )
+        await this.productDescriptionsService.findOne(payload.product_desc_id)
       const findOneSpecialRulesId = await this.specialRulesService.findOne(
         payload.special_rules_id,
       )
@@ -97,7 +91,7 @@ export class ProductsService {
     }
   }
 
-  async update(id: string, payload:  UpdateProductsDTO) {
+  async update(id: string, payload: UpdateProductsDTO) {
     try {
       await this.findOneById(id)
 
@@ -131,5 +125,57 @@ export class ProductsService {
     } catch (e) {
       throw e
     }
+  }
+
+  async listProductsByOwner(id: string) {
+    try {
+      const owner = await this.userService.findOne(id)
+      return await this.productsRepository.findOneOrFail({
+        where: { user: { id: owner.id } },
+      })
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw e
+      }
+    }
+  }
+
+  async deactivateProductOwner(id: string) {
+    try {
+      const owner = await this.userService.findOne(id)
+      await this.productsRepository.update(
+        { user: { id: owner.id } },
+        { active_status: false },
+      )
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Owner products deactivated successfully',
+      }
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async listProductsWithSearch(searchCriteria: string, page: number = 1, limit: number = 10) {
+    const [data, count] = await this.productsRepository.findAndCount({
+      where: [
+        { type: Like(`%${searchCriteria}%`) }, // Adjust this based on your entity's properties
+        // Add other criteria for search based on your entity properties
+      ],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      count,
+      data,
+    };
   }
 }

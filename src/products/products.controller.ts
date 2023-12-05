@@ -18,9 +18,8 @@ import { UpdateProductsDTO } from './dto/update-products.dto'
 @Controller('products')
 export class ProductsController {
   constructor(
-    private productsService: ProductsService,
-  ) // private photoProductsService: PhotoProductsService
-  {}
+    private productsService: ProductsService, // private photoProductsService: PhotoProductsService
+  ) {}
 
   @Get()
   async getAll(@Query('page') page: number, @Query('limit') limit: number) {
@@ -43,6 +42,16 @@ export class ProductsController {
       message: 'success',
       data,
     }
+  }
+
+  
+  @Get('/search')
+  async listProductsWithSearch(
+    @Query('s') searchCriteria: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.productsService.listProductsWithSearch(searchCriteria,page, limit);
   }
 
   @Get(':id')
@@ -75,4 +84,21 @@ export class ProductsController {
       message: await this.productsService.softDeleteById(id),
     }
   }
+
+  @Get('/find-owner/:id')
+  async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.productsService.listProductsByOwner(id),
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+    }
+  }
+
+  @Put('deactivate-owner/:id')
+  async deactivateOwnerProducts(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      message: await this.productsService.deactivateProductOwner(id),
+    }
+  }
+
 }

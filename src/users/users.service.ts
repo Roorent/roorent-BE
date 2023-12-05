@@ -8,12 +8,15 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { EntityNotFoundError, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
+import { Biodatas } from '#/biodatas/entities/biodatas.entity'
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users)
     private usersRepository: Repository<Users>,
+    @InjectRepository(Biodatas)
+    private biodatasRepository: Repository<Biodatas>,
   ) {}
 
   async findUsersByLevel(role: string) {
@@ -155,5 +158,65 @@ export class UsersService {
     }
 
     await this.usersRepository.softDelete(id)
+  }
+
+  async getNonactive(id: string, active: any) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        relations: ['biodata'],
+        where: { id },
+      })
+
+      if(user.biodata.isActive !== 'active') {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } 
+
+      const biodataId = user.biodata.id
+      const biodatasEntity = new Biodatas()
+      biodatasEntity.isActive = active
+       
+     const updateStatus = await this.biodatasRepository.update(biodataId, biodatasEntity)
+
+      return updateStatus
+
+     } catch (err) {
+      throw err
+     }
+  }
+
+  async getReactive(id: string, active: any) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        relations: ['biodata'],
+        where: { id },
+      })
+
+      if(user.biodata.isActive !== 'inactive') {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } 
+
+      const biodataId = user.biodata.id
+      const biodatasEntity = new Biodatas()
+      biodatasEntity.isActive = active
+       
+     const updateStatus = await this.biodatasRepository.update(biodataId, biodatasEntity)
+
+      return updateStatus
+
+     } catch (err) {
+      throw err
+     }
   }
 }
