@@ -48,18 +48,20 @@ export class ProductsController {
   @Get('/search')
   async listProductsWithSearch(
     @Query('s') searchCriteria: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
   ) {
-    return this.productsService.listProductsWithSearch(searchCriteria);
+    return this.productsService.listProductsWithSearch(searchCriteria,page, limit);
   }
 
-  // @Get(':id')
-  // async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     message: 'succes',
-  //     data: await this.productsService.findOneById(id),
-  //   }
-  // }
+  @Get(':id')
+  async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'succes',
+      data: await this.productsService.findOneById(id),
+    }
+  }
 
   @Put(':id')
   async update(
