@@ -20,7 +20,7 @@ export class ProductsService {
     private specialRulesService: SpecialRulesService,
   ) {}
 
-  findAll(page: number = 1 , limit: number = 10) {
+  findAll(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
       skip: --page * limit,
       take: limit,
@@ -58,16 +58,10 @@ export class ProductsService {
 
   async create(payload: CreateProductsDTO) {
     try {
-      const findOneUserId = await this.userService.findOne(
-        payload.user_id,
-      )
-      const findOneCityId = await this.citiesService.findOne(
-        payload.city_id,
-      )
+      const findOneUserId = await this.userService.findOne(payload.user_id)
+      const findOneCityId = await this.citiesService.findOne(payload.city_id)
       const findOneProductDescriptionsId =
-        await this.productDescriptionsService.findOne(
-          payload.product_desc_id,
-        )
+        await this.productDescriptionsService.findOne(payload.product_desc_id)
       const findOneSpecialRulesId = await this.specialRulesService.findOne(
         payload.special_rules_id,
       )
@@ -97,7 +91,7 @@ export class ProductsService {
     }
   }
 
-  async update(id: string, payload:  UpdateProductsDTO) {
+  async update(id: string, payload: UpdateProductsDTO) {
     try {
       await this.findOneById(id)
 
@@ -133,11 +127,11 @@ export class ProductsService {
     }
   }
 
-  async listProductsByOwner (id: string){
+  async listProductsByOwner(id: string) {
     try {
       const owner = await this.userService.findOne(id)
       return await this.productsRepository.findOneOrFail({
-        where:{user: {id:owner.id}}
+        where: { user: { id: owner.id } },
       })
     } catch (e) {
       if (e instanceof EntityNotFoundError) {
@@ -151,4 +145,19 @@ export class ProductsService {
     }
   }
 
+  async deactivateProductOwner(id: string) {
+    try {
+      const owner = await this.userService.findOne(id)
+      await this.productsRepository.update(
+        { user: { id: owner.id } },
+        { active_status: false },
+      )
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Owner products deactivated successfully',
+      }
+    } catch (e) {
+      throw e
+    }
+  }
 }

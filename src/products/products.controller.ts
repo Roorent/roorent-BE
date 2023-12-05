@@ -18,9 +18,8 @@ import { UpdateProductsDTO } from './dto/update-products.dto'
 @Controller('products')
 export class ProductsController {
   constructor(
-    private productsService: ProductsService,
-  ) // private photoProductsService: PhotoProductsService
-  {}
+    private productsService: ProductsService, // private photoProductsService: PhotoProductsService
+  ) {}
 
   @Get()
   async getAll(@Query('page') page: number, @Query('limit') limit: number) {
@@ -77,12 +76,18 @@ export class ProductsController {
   }
 
   @Get('/find-owner/:id')
-    async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string){
-        return {
-            data : await this.productsService.listProductsByOwner(id),
-            statusCode: HttpStatus.OK,
-            message: "Success",
-        }
+  async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.productsService.listProductsByOwner(id),
+      statusCode: HttpStatus.OK,
+      message: 'Success',
     }
+  }
 
+  @Put('deactivate-owner/:id')
+  async deactivateOwnerProducts(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      message: await this.productsService.deactivateProductOwner(id),
+    }
+  }
 }
