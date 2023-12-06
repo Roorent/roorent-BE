@@ -15,11 +15,12 @@ import { BiodatasModule } from './biodatas/biodatas.module'
 import { SpecialRulesModule } from './special_rules/special_rules.module'
 import { BanksModule } from './banks/banks.module'
 import { ProductDescriptionsModule } from './product_descriptions/product_descriptions.module'
-import { CitiesModule } from './cities/cities.module';
-import { ProductsModule } from './products/products.module';
-import { PhotoProductsModule } from './photo_products/photo_products.module';
-import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module';
-import { FavProductModule } from './fav_product/favorits.module';
+import { CitiesModule } from './cities/cities.module'
+import { ProductsModule } from './products/products.module'
+import { PhotoProductsModule } from './photo_products/photo_products.module'
+import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module'
+import { FavProductModule } from './fav_product/favorits.module'
+import { ChatsModule } from './chats/chats.module'
 
 @Module({
   imports: [
@@ -117,7 +118,8 @@ import { FavProductModule } from './fav_product/favorits.module';
     ProductsModule,
     PhotoProductsModule,
     FavProductModule,
-    PhotoReviewsModule
+    PhotoReviewsModule,
+    ChatsModule,
   ],
 })
 export class AppModule {}
