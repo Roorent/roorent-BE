@@ -164,8 +164,10 @@ export class ProductsService {
   async listProductsWithSearch(searchCriteria: string, page: number = 1, limit: number = 10) {
     const [data, count] = await this.productsRepository.findAndCount({
       where: [
-        { type: Like(`%${searchCriteria}%`) }, // Adjust this based on your entity's properties
-        // Add other criteria for search based on your entity properties
+        { name: Like(`%${searchCriteria}%`) },
+        { type: Like(`%${searchCriteria}%`) },
+        { address: Like(`%${searchCriteria}%`) },
+        
       ],
       take: limit,
       skip: (page - 1) * limit,
