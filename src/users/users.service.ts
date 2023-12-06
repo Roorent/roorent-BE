@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { EntityNotFoundError, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
+import { ApproveOwnerDTO } from './dto/approve-user.dto'
 import { Biodatas } from '#/biodatas/entities/biodatas.entity'
 
 @Injectable()
@@ -218,5 +219,20 @@ export class UsersService {
      } catch (err) {
       throw err
      }
+  }
+
+  async approveOwner(id: string, approveOwnerDTO: ApproveOwnerDTO){
+    try {
+      await this.findOne(id)
+      const users = new Biodatas()
+      users.isActive = approveOwnerDTO.status
+
+      await this.biodatasRepository.update(id, users)
+      return await this.biodatasRepository.findOneOrFail({
+        where: {user:{id}}
+      })
+    } catch (err) {
+      throw err
+    }
   }
 }
