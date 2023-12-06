@@ -1,4 +1,5 @@
 import { PhotoReviews } from '#/photo_reviews/entities/photo_reviews.entity'
+import { Products } from '#/products/enitities/products.entity'
 import { Users } from '#/users/entities/user.entity'
 import {
   Column,
@@ -48,6 +49,9 @@ export class Reviews {
 
   @ManyToOne(() => Users, (user) => user.reviews)
   user: Users
+
+  @ManyToOne(() => Products, (product) => product.reviews)
+  product: Products
 
   @OneToMany(() => PhotoReviews, (photoReviews) => photoReviews.reviews)
   photoReviews: PhotoReviews

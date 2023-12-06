@@ -14,7 +14,7 @@ export class BanksService {
     private usersService: UsersService,
   ) {}
 
-  findAll(page: number = 1 , limit: number = 10) {
+  findAll(page: number = 1, limit: number = 10) {
     return this.banksRepository.findAndCount({
       skip: --page * limit,
       take: limit,
@@ -26,9 +26,7 @@ export class BanksService {
 
   async create(payload: CreateBanksDTO) {
     try {
-      const findOneUserId = await this.usersService.findOne(
-        payload.user_id,
-      )
+      const findOneUserId = await this.usersService.findOne(payload.user_id)
 
       const banksEntity = new Banks()
       banksEntity.bank_name = payload.bank_name
@@ -58,7 +56,7 @@ export class BanksService {
         throw new HttpException(
           {
             statusCode: HttpStatus.NOT_FOUND,
-            error: 'data not found',
+            error: 'Data not found',
           },
           HttpStatus.NOT_FOUND,
         )
@@ -95,7 +93,7 @@ export class BanksService {
 
       await this.banksRepository.softDelete(id)
 
-      return 'success'
+      return 'Success'
     } catch (err) {
       throw err
     }
