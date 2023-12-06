@@ -25,7 +25,7 @@ export class Chats {
     type: 'boolean',
     default: false,
   })
-  status: boolean
+  readable: boolean
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   timestamp: Date
