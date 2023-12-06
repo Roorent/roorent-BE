@@ -79,8 +79,8 @@ export class RentApplicationsService {
       await this.findOneById(id)
 
       const rentApplicationsEntity = new RentApplications()
-      rentApplicationsEntity.lease_start = payload.lease_start
-      rentApplicationsEntity.lease_expiration = payload.lease_expiration
+      rentApplicationsEntity.lease_start = new Date(payload.lease_start)
+      rentApplicationsEntity.lease_expiration = new Date(payload.lease_expiration)
       rentApplicationsEntity.rental_type = payload.rental_type
       rentApplicationsEntity.price = payload.price
       rentApplicationsEntity.total_price = payload.total_price

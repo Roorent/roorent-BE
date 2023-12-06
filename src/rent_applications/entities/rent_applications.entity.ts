@@ -1,6 +1,7 @@
 import { Products } from "#/products/enitities/products.entity";
+import { Transactions } from "#/transactions/entities/transactions.entity";
 import { Users } from "#/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class RentApplications {
@@ -60,4 +61,7 @@ export class RentApplications {
 
   @ManyToOne(() => Users, (user) => user.rentApplications)
   user: Users
+
+  @OneToMany(() => Transactions, (transactions) => transactions.rentApplications)
+  transactions: Transactions
 }
