@@ -3,6 +3,7 @@ import { Biodatas } from '#/biodatas/entities/biodatas.entity'
 import { Chats } from '#/chats/entities/chats.entity'
 import { Favorits } from '#/fav_product/entities/favorits.entity'
 import { Levels } from '#/levels/entities/level.entity'
+import { Notifications } from '#/notifications/entities/notification.entity'
 import { Products } from '#/products/enitities/products.entity'
 import { Reviews } from '#/reviews/entities/reviews.entity'
 import {
@@ -78,4 +79,10 @@ export class Users {
 
   @OneToMany(() => Chats, (chat) => chat.receiver)
   receivedChats: Chats[]
+
+  @OneToMany(() => Notifications, (notification) => notification.sender)
+  sentNotif: Notifications[]
+
+  @OneToMany(() => Notifications, (notification) => notification.receiver)
+  receivedNotif: Notifications[]
 }

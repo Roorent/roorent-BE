@@ -21,6 +21,7 @@ import { PhotoProductsModule } from './photo_products/photo_products.module'
 import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module'
 import { FavProductModule } from './fav_product/favorits.module'
 import { ChatsModule } from './chats/chats.module'
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -120,6 +121,7 @@ import { ChatsModule } from './chats/chats.module'
     FavProductModule,
     PhotoReviewsModule,
     ChatsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
