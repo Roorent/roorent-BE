@@ -55,7 +55,10 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/nonactive/:id')
-  async getNonactive(@Param('id', ParseUUIDPipe) id: string, @Body('isActive') isActive: string){
+  async getNonactive(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('isActive') isActive: string,
+  ) {
     const data = await this.usersService.getNonactive(id, isActive)
     return {
       statusCode: HttpStatus.OK,
@@ -66,7 +69,10 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/reactive/:id')
-  async getReactive(@Param('id', ParseUUIDPipe) id: string, @Body('isActive') isActive: string){
+  async getReactive(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('isActive') isActive: string,
+  ) {
     const data = await this.usersService.getReactive(id, isActive)
     return {
       statusCode: HttpStatus.OK,
@@ -113,12 +119,13 @@ export class UsersController {
   @Put('approve/:id')
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() payload: ApproveOwnerDTO)
-    {
-      return{
-        statusCode: HttpStatus.OK,
-        message: 'success',
-        data: await this.usersService.approveOwner(id, payload)
-      }
+    @Body('isActive') isActive: string,
+  ) {
+    const data = await this.usersService.approveOwner(id, isActive)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
     }
+  }
 }
