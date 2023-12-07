@@ -8,7 +8,6 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { EntityNotFoundError, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ApproveOwnerDTO } from './dto/approve-user.dto'
 import { Biodatas } from '#/biodatas/entities/biodatas.entity'
 
 @Injectable()
@@ -168,7 +167,7 @@ export class UsersService {
         where: { id },
       })
 
-      if(user.biodata.isActive !== 'active') {
+      if (user.biodata.isActive !== 'active') {
         throw new HttpException(
           {
             statusCode: HttpStatus.NOT_FOUND,
@@ -176,19 +175,20 @@ export class UsersService {
           },
           HttpStatus.NOT_FOUND,
         )
-      } 
+      }
 
       const biodataId = user.biodata.id
       const biodatasEntity = new Biodatas()
       biodatasEntity.isActive = active
-       
-     const updateStatus = await this.biodatasRepository.update(biodataId, biodatasEntity)
 
-      return updateStatus
+      await this.biodatasRepository.update(biodataId, biodatasEntity)
 
-     } catch (err) {
+      return await this.biodatasRepository.findOneOrFail({
+        where: { user: { id } },
+      })
+    } catch (err) {
       throw err
-     }
+    }
   }
 
   async getReactive(id: string, active: any) {
@@ -198,7 +198,7 @@ export class UsersService {
         where: { id },
       })
 
-      if(user.biodata.isActive !== 'inactive') {
+      if (user.biodata.isActive !== 'inactive') {
         throw new HttpException(
           {
             statusCode: HttpStatus.NOT_FOUND,
@@ -206,30 +206,47 @@ export class UsersService {
           },
           HttpStatus.NOT_FOUND,
         )
-      } 
+      }
 
       const biodataId = user.biodata.id
       const biodatasEntity = new Biodatas()
       biodatasEntity.isActive = active
-       
-     const updateStatus = await this.biodatasRepository.update(biodataId, biodatasEntity)
 
-      return updateStatus
+      await this.biodatasRepository.update(biodataId, biodatasEntity)
 
-     } catch (err) {
+      return await this.biodatasRepository.findOneOrFail({
+        where: { user: { id } },
+      })
+    } catch (err) {
       throw err
-     }
+    }
   }
 
-  async approveOwner(id: string, approveOwnerDTO: ApproveOwnerDTO){
+  async approveOwner(id: string, active: any) {
     try {
-      await this.findOne(id)
-      const users = new Biodatas()
-      users.isActive = approveOwnerDTO.status
+      const user = await this.usersRepository.findOneOrFail({
+        relations: ['biodata'],
+        where: { id },
+      })
 
-      await this.biodatasRepository.update(id, users)
+      if (user.biodata.isActive !== 'pending') {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      }
+
+      const biodataId = user.biodata.id
+      const biodatasEntity = new Biodatas()
+      biodatasEntity.isActive = active
+
+      await this.biodatasRepository.update(biodataId, biodatasEntity)
+
       return await this.biodatasRepository.findOneOrFail({
-        where: {user:{id}}
+        where: { user: { id } },
       })
     } catch (err) {
       throw err

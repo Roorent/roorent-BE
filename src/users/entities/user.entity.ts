@@ -5,7 +5,9 @@ import { Favorits } from '#/fav_product/entities/favorits.entity'
 import { Levels } from '#/levels/entities/level.entity'
 import { Notifications } from '#/notifications/entities/notification.entity'
 import { Products } from '#/products/enitities/products.entity'
+import { RentApplications } from '#/rent_applications/entities/rent_applications.entity'
 import { Reviews } from '#/reviews/entities/reviews.entity'
+import { Transactions } from '#/transactions/entities/transactions.entity'
 import {
   Entity,
   Column,
@@ -85,4 +87,10 @@ export class Users {
 
   @OneToMany(() => Notifications, (notification) => notification.receiver)
   receivedNotif: Notifications[]
+  
+  @OneToMany(() => RentApplications, (rentApplications) => rentApplications.user)
+  rentApplications: RentApplications
+
+  @OneToMany(() => Transactions, (transactions) => transactions.user)
+  transactions: Transactions
 }
