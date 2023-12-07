@@ -41,14 +41,34 @@ export class ReviewsController {
     }
   }
 
+  @Get('/product/:id')
+  async findByProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const [data, count] = await this.reviewService.findByProduct(
+      page,
+      limit,
+      id,
+    )
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
+    }
+  }
+
   @Post()
   async create(@Body() payload: CreateReviewDTO) {
-    const datas = await this.reviewService.create(payload)
+    const data = await this.reviewService.create(payload)
 
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Success',
-      data: datas,
+      data,
     }
   }
 
@@ -57,23 +77,23 @@ export class ReviewsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: UpdateReviewDTO,
   ) {
-    const datas = await this.reviewService.update(id, payload)
+    const data = await this.reviewService.update(id, payload)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-      data: datas,
+      data,
     }
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    const datas = await this.reviewService.remove(id)
+    const data = await this.reviewService.remove(id)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-      data: datas,
+      data,
     }
   }
 }
