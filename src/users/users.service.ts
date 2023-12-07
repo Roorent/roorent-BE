@@ -8,7 +8,6 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { EntityNotFoundError, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ApproveOwnerDTO } from './dto/approve-user.dto'
 import { Biodatas } from '#/biodatas/entities/biodatas.entity'
 
 @Injectable()
