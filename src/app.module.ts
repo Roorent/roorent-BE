@@ -21,6 +21,7 @@ import { PhotoProductsModule } from './photo_products/photo_products.module'
 import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module'
 import { FavProductModule } from './fav_product/favorits.module'
 import { ChatsModule } from './chats/chats.module'
+import { NotificationsModule } from './notifications/notifications.module';
 import { RentApplicationsModule } from './rent_applications/rent_applications.module';
 import { TransactionsModule } from './transactions/transactions.module';
 
@@ -122,6 +123,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     FavProductModule,
     PhotoReviewsModule,
     ChatsModule,
+    NotificationsModule,
     RentApplicationsModule,
     TransactionsModule,
   ],
