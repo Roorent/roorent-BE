@@ -6,6 +6,7 @@ import { Levels } from '#/levels/entities/level.entity'
 import { Products } from '#/products/enitities/products.entity'
 import { RentApplications } from '#/rent_applications/entities/rent_applications.entity'
 import { Reviews } from '#/reviews/entities/reviews.entity'
+import { Transactions } from '#/transactions/entities/transactions.entity'
 import {
   Entity,
   Column,
@@ -82,4 +83,7 @@ export class Users {
 
   @OneToMany(() => RentApplications, (rentApplications) => rentApplications.user)
   rentApplications: RentApplications
+
+  @OneToMany(() => Transactions, (transactions) => transactions.user)
+  transactions: Transactions
 }

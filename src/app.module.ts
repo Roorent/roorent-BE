@@ -22,6 +22,7 @@ import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module'
 import { FavProductModule } from './fav_product/favorits.module'
 import { ChatsModule } from './chats/chats.module'
 import { RentApplicationsModule } from './rent_applications/rent_applications.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -122,6 +123,7 @@ import { RentApplicationsModule } from './rent_applications/rent_applications.mo
     PhotoReviewsModule,
     ChatsModule,
     RentApplicationsModule,
+    TransactionsModule,
   ],
 })
 export class AppModule {}
