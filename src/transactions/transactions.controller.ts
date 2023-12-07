@@ -97,4 +97,32 @@ export class TransactionsController {
       message: await this.transactionService.softDeleteById(id),
     }
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('approve/:id')
+  async approve(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('payment_status') payment_status: string,
+  ) {
+    const data = await this.transactionService.approveTransactions(id, payment_status)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('reject/:id')
+  async reject(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('payment_status') payment_status: string,
+  ) {
+    const data = await this.transactionService.rejectTransactions(id, payment_status)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
 }

@@ -14,7 +14,6 @@ import {
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { AuthGuard } from '@nestjs/passport'
-import { ApproveOwnerDTO } from './dto/approve-user.dto'
 
 @Controller('users')
 export class UsersController {

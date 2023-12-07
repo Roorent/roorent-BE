@@ -103,4 +103,48 @@ export class TransactionsService {
       throw e
     }
   }
+
+  async approveTransactions(id: string, active: any) {
+    try {
+      await this.findOneById(id)
+  
+      const transactionsEntity = new Transactions()
+      transactionsEntity.payment_status = active
+  
+      await this.transactionsRepository.update(id, transactionsEntity)
+      return await this.transactionsRepository.findOneOrFail({
+        where: {id},
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: true,
+        },
+      })
+      
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async rejectTransactions(id: string, active: any) {
+    try {
+      await this.findOneById(id)
+  
+      const transactionsEntity = new Transactions()
+      transactionsEntity.payment_status = active
+  
+      await this.transactionsRepository.update(id, transactionsEntity)
+      return await this.transactionsRepository.findOneOrFail({
+        where: {id},
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: true,
+        },
+      })
+      
+    } catch (err) {
+      throw err
+    }
+  }
 }
