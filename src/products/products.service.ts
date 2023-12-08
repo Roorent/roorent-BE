@@ -5,9 +5,10 @@ import { Like, EntityNotFoundError, Repository } from 'typeorm'
 import { UsersService } from '#/users/users.service'
 import { CreateProductsDTO } from './dto/create-products.dto'
 import { CitiesService } from '#/cities/cities.service'
-import { SpecialRulesService } from '#/special_rules/special_rules.service'
-import { ProductDescriptionsService } from '#/product_descriptions/product_descriptions.service'
 import { UpdateProductsDTO } from './dto/update-products.dto'
+import { ProductDescriptions } from '#/product_descriptions/entities/product_descriptions.entity'
+import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
+import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
 
 @Injectable()
 export class ProductsService {
@@ -16,8 +17,12 @@ export class ProductsService {
     private productsRepository: Repository<Products>,
     private userService: UsersService,
     private citiesService: CitiesService,
-    private productDescriptionsService: ProductDescriptionsService,
-    private specialRulesService: SpecialRulesService,
+    @InjectRepository(ProductDescriptions)
+    private productDescriptionsRepository: Repository<ProductDescriptions>,
+    @InjectRepository(SpecialRules)
+    private specialRulesRepository: Repository<SpecialRules>,
+    @InjectRepository(PhotoProducts)
+    private photoProductsRepository: Repository<PhotoProducts>,
   ) {}
 
   findAll(page: number = 1, limit: number = 10) {
@@ -29,6 +34,7 @@ export class ProductsService {
         cities: true,
         productDescriptions: true,
         specialRules: true,
+        photoProducts: true,
       },
     })
   }
@@ -42,6 +48,7 @@ export class ProductsService {
           cities: true,
           productDescriptions: true,
           specialRules: true,
+          photoProducts: true,
         },
       })
     } catch (err) {
@@ -56,16 +63,26 @@ export class ProductsService {
     }
   }
 
-  async create(payload: CreateProductsDTO) {
+  async create(
+    payload: CreateProductsDTO,
+  ) {
     try {
       const findOneUserId = await this.userService.findOne(payload.user_id)
       const findOneCityId = await this.citiesService.findOne(payload.city_id)
-      const findOneProductDescriptionsId =
-        await this.productDescriptionsService.findOne(payload.product_desc_id)
-      const findOneSpecialRulesId = await this.specialRulesService.findOne(
-        payload.special_rules_id,
-      )
 
+      const productDescriptionsEntity = new ProductDescriptions()
+      productDescriptionsEntity.specifications = payload.specifications
+      productDescriptionsEntity.facilities = payload.facilities
+      productDescriptionsEntity.general = payload.general
+
+      const specialRulesEntity = new SpecialRules()
+      specialRulesEntity.max_person = payload.max_person
+      specialRulesEntity.gender = payload.gender
+      specialRulesEntity.general = payload.general
+     
+      const insertProductDescriptions = await this.productDescriptionsRepository.insert(productDescriptionsEntity)
+      const insertSpecialRules = await this.specialRulesRepository.insert(specialRulesEntity)
+      
       const productsEntity = new Products()
       productsEntity.name = payload.name
       productsEntity.type = payload.type
@@ -73,19 +90,46 @@ export class ProductsService {
       productsEntity.daily_price = payload.daily_price
       productsEntity.monthly_price = payload.monthly_price
       productsEntity.address = payload.address
-      productsEntity.latitude = payload.latitude
-      productsEntity.longitude = payload.longitude
+      productsEntity.location = payload.location
       productsEntity.user = findOneUserId
       productsEntity.cities = findOneCityId
-      productsEntity.productDescriptions = findOneProductDescriptionsId
-      productsEntity.specialRules = findOneSpecialRulesId
-
+      productsEntity.productDescriptions =  insertProductDescriptions.identifiers[0].id
+      productsEntity.specialRules = insertSpecialRules.identifiers[0].id
       const insertProduct = await this.productsRepository.insert(productsEntity)
-      return await this.productsRepository.findOneOrFail({
-        where: {
-          id: insertProduct.identifiers[0].id,
-        },
-      })
+
+      
+      const photoProductsEntity = new PhotoProducts()
+      // photoProductsEntity.photo = payload.photo
+      if (Array.isArray(payload.photo)) {
+        photoProductsEntity.photo = payload.photo
+      } else {
+        photoProductsEntity.photo = [payload.photo]
+      }
+      photoProductsEntity.products = insertProduct.identifiers[0].id
+      const insertPhotoProducts = await this.photoProductsRepository.insert(photoProductsEntity)
+
+      return ([
+        await this.productsRepository.findOneOrFail({
+          where: {
+            id: insertProduct.identifiers[0].id,
+          },
+        }),
+        await this.productDescriptionsRepository.findOneOrFail({
+          where: {
+            id: insertProductDescriptions.identifiers[0].id,
+          },
+        }),
+        await this.specialRulesRepository.findOneOrFail({
+          where: {
+            id: insertSpecialRules.identifiers[0].id,
+          },
+        }),
+        await this.photoProductsRepository.findOneOrFail({
+          where: {
+            id: insertPhotoProducts.identifiers[0].id,
+          },
+        })
+       ] )
     } catch (err) {
       throw err
     }
@@ -102,8 +146,7 @@ export class ProductsService {
       productsEntity.daily_price = payload.daily_price
       productsEntity.monthly_price = payload.monthly_price
       productsEntity.address = payload.address
-      productsEntity.latitude = payload.latitude
-      productsEntity.longitude = payload.longitude
+      productsEntity.location = payload.location
 
       await this.productsRepository.update(id, productsEntity)
 
@@ -171,7 +214,6 @@ export class ProductsService {
         { name: Like(`%${searchCriteria}%`) },
         { type: Like(`%${searchCriteria}%`) },
         { address: Like(`%${searchCriteria}%`) },
-        
       ],
       take: limit,
       skip: (page - 1) * limit,

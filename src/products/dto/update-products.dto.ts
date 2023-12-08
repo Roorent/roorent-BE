@@ -1,4 +1,5 @@
-import { IsInt, IsNotEmpty } from "class-validator";
+import { GenderProduct } from "#/special_rules/entities/special_rules.entity";
+import { IsEnum, IsInt, IsNotEmpty, IsNumber } from "class-validator";
 
 export class UpdateProductsDTO {
     @IsNotEmpty()
@@ -23,8 +24,23 @@ export class UpdateProductsDTO {
     address: string;
 
     @IsNotEmpty()
-    latitude: string;
-
+    location: string;
+  
     @IsNotEmpty()
-    longitude: string;
+    specifications: string
+  
+    @IsNotEmpty()
+    facilities: string
+  
+    @IsNotEmpty()
+    general: string
+  
+    @IsNumber()
+    max_person: number
+  
+    @IsEnum(GenderProduct)
+    gender: GenderProduct
+  
+    @IsNotEmpty()
+    Note: string
 }

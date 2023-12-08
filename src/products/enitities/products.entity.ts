@@ -70,13 +70,7 @@ export class Products {
     type: 'varchar',
     length: 255,
   })
-  latitude: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  longitude: string
+  location: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',
@@ -108,7 +102,7 @@ export class Products {
   specialRules: SpecialRules
 
   @OneToMany(() => PhotoProducts, (photoProducts) => photoProducts.products)
-  photoProducts: PhotoProducts
+  photoProducts: PhotoProducts[]
 
   @ManyToOne(() => Cities, (cities) => cities.products)
   cities: Cities

@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { SpecialRulesService } from './special_rules.service'
-import { CreateSpecialRulesDto } from './dto/create-specialRules.dto'
+import { CreateSpecialRulesDTO } from './dto/create-specialRules.dto'
 import { UpdateSpecialRulesDto } from './dto/update-specialRules.dto'
 
 @Controller('special-rules')
@@ -30,7 +30,7 @@ export class SpecialRulesController {
   }
 
   @Post()
-  async create(@Body() payload: CreateSpecialRulesDto) {
+  async create(@Body() payload: CreateSpecialRulesDTO) {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'success',
