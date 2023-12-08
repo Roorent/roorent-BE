@@ -1,10 +1,8 @@
-import { Products } from '#/products/enitities/products.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -35,7 +33,7 @@ export class SpecialRules {
     type: 'varchar',
     length: 255,
   })
-  general: string
+  note: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

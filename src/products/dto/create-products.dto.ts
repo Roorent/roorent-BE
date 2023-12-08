@@ -44,7 +44,7 @@ export class CreateProductsDTO {
   facilities: string
 
   @IsNotEmpty()
-  general: string
+  note: string
 
   @IsNotEmpty()
   @IsNumber()

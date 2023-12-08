@@ -73,12 +73,12 @@ export class ProductsService {
       const productDescriptionsEntity = new ProductDescriptions()
       productDescriptionsEntity.specifications = payload.specifications
       productDescriptionsEntity.facilities = payload.facilities
-      productDescriptionsEntity.general = payload.general
+      productDescriptionsEntity.note = payload.note
 
       const specialRulesEntity = new SpecialRules()
       specialRulesEntity.max_person = payload.max_person
       specialRulesEntity.gender = payload.gender
-      specialRulesEntity.general = payload.general
+      specialRulesEntity.note = payload.note
      
       const insertProductDescriptions = await this.productDescriptionsRepository.insert(productDescriptionsEntity)
       const insertSpecialRules = await this.specialRulesRepository.insert(specialRulesEntity)
@@ -99,7 +99,6 @@ export class ProductsService {
 
       
       const photoProductsEntity = new PhotoProducts()
-      // photoProductsEntity.photo = payload.photo
       if (Array.isArray(payload.photo)) {
         photoProductsEntity.photo = payload.photo
       } else {
@@ -137,20 +136,60 @@ export class ProductsService {
 
   async update(id: string, payload: UpdateProductsDTO) {
     try {
-      await this.findOneById(id)
+      const allProducts = await this.productsRepository.findOneOrFail({
+        where: {id},
+        relations: {
+          user: true,
+          cities: true,
+          productDescriptions: true,
+          specialRules: true,
+          photoProducts: true,
+        },
+      })
 
-      const productsEntity = new Products()
-      productsEntity.name = payload.name
-      productsEntity.type = payload.type
-      productsEntity.stock = payload.stock
-      productsEntity.daily_price = payload.daily_price
-      productsEntity.monthly_price = payload.monthly_price
-      productsEntity.address = payload.address
-      productsEntity.location = payload.location
+      const productDescId = await allProducts.productDescriptions.id
+      const specialRulesId = await allProducts.specialRules.id
+      const photoProductsId = await allProducts.photoProducts[0].id
 
-      await this.productsRepository.update(id, productsEntity)
+      const dataProductDesc = {
+        specifications: payload.specifications,
+        facilities: payload.facilities,
+        note: payload.note
+      }
+
+      const dataSpecialRules = {
+        max_person: payload.max_person,
+        gender: payload.gender,
+        note: payload.note
+      }
+
+      const dataProducts = {
+        name: payload.name,
+        type : payload.type,
+        stock : payload.stock,
+        daily_price : payload.daily_price,
+        monthly_price : payload.monthly_price,
+        address : payload.address,
+        location : payload.location
+      }
+      
+      await this.productsRepository.update(id, dataProducts)
+      await this.productDescriptionsRepository.update(productDescId, dataProductDesc)
+      await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
+
+      const dataPhotoProducts = {
+        photo: payload.photo
+      }
+     await this.photoProductsRepository.update(photoProductsId, dataPhotoProducts)
 
       return await this.productsRepository.findOneOrFail({
+        relations: {
+          user: true,
+          cities: true,
+          productDescriptions: true,
+          specialRules: true,
+          photoProducts: true,
+        },
         where: {
           id,
         },
@@ -162,8 +201,26 @@ export class ProductsService {
 
   async softDeleteById(id: string) {
     try {
-      await this.findOneById(id)
+      const allProducts = await this.productsRepository.findOneOrFail({
+        where: {id},
+        relations: {
+          user: true,
+          cities: true,
+          productDescriptions: true,
+          specialRules: true,
+          photoProducts: true,
+        },
+      })
+
+      const productDescId = await allProducts.productDescriptions.id
+      const specialRulesId = await allProducts.specialRules.id
+      const photoProductsId = await allProducts.photoProducts[0].id
+      
       await this.productsRepository.softDelete(id)
+      await this.productDescriptionsRepository.softDelete(productDescId)
+      await this.specialRulesRepository.softDelete(specialRulesId)
+      await this.photoProductsRepository.softDelete(photoProductsId)
+
       return 'Success'
     } catch (err) {
       throw err
