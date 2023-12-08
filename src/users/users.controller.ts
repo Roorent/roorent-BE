@@ -127,4 +127,19 @@ export class UsersController {
       data,
     }
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('reject/:id')
+  async reject(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('isActive') isActive: string,
+    @Body('reason') reason: string,
+  ) {
+    const data = await this.usersService.rejectOwner(id, isActive, reason)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
 }

@@ -252,4 +252,36 @@ export class UsersService {
       throw err
     }
   }
+
+  async rejectOwner(id: string, active: any, reason: any){
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        relations: ['biodata'],
+        where: { id },
+      })
+
+      if (user.biodata.isActive !== 'pending') {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      }
+
+      const biodataId = user.biodata.id
+      const biodatasEntity = new Biodatas()
+      biodatasEntity.isActive = active
+      biodatasEntity.reason = reason
+
+      await this.biodatasRepository.update(biodataId, biodatasEntity)
+
+      return await this.biodatasRepository.findOneOrFail({
+        where: { user: { id } },
+      })
+    } catch (err) {
+      throw err
+    }
+  }
 }

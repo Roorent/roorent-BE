@@ -29,4 +29,6 @@ export class CreateBiodatasDTO {
 
   @IsNotEmpty()
   address: string;
+
+  reason: string;
 }

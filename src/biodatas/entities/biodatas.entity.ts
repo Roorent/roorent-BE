@@ -89,6 +89,11 @@ export class Biodatas {
   })
   isActive: StatusUsers
 
+  @Column({
+    nullable: true
+  })
+  reason: string
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
     nullable: false,
