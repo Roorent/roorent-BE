@@ -54,6 +54,32 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('all-owner')
+  async getAllOwner(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.transactionService.listAllOwner(page, limit)
+
+    return {
+      statusCode: HttpStatusCode.Ok,
+      message: 'success',
+      count,
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('all-renter')
+  async getAllRenter(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.transactionService.listAllRenter(page, limit)
+
+    return {
+      statusCode: HttpStatusCode.Ok,
+      message: 'success',
+      count,
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('renter')
   async createRenter(@Body() payload: CreateTransactionsDTO) {
     const data = await this.transactionService.createRenter(payload)
@@ -66,7 +92,7 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('renter')
+  @Post('owner')
   async createOwner(@Body() payload: CreateTransactionsDTO) {
     const data = await this.transactionService.createOwner(payload)
 
@@ -74,6 +100,26 @@ export class TransactionsController {
       statusCode: HttpStatus.CREATED,
       message: 'success',
       data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/renter/:id')
+  async getDetailRenterById(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'succes',
+      data: await this.transactionService.getDetailRenterById(id),
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/owner/:id')
+  async getDetailOwnerById(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'succes',
+      data: await this.transactionService.getDetailOwnerById(id),
     }
   }
 
@@ -136,6 +182,26 @@ export class TransactionsController {
       statusCode: HttpStatus.OK,
       message: 'success',
       data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/list-renter/:id')
+  async getProductsByRenter(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.transactionService.listTransactionsByRenter(id),
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/list-owner/:id')
+  async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.transactionService.listTransactionsByOwner(id),
+      statusCode: HttpStatus.OK,
+      message: 'Success',
     }
   }
 }

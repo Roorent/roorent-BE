@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Transactions } from './entities/transactions.entity';
+import { PaymentStatus, TransactionType, Transactions } from './entities/transactions.entity';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { BanksService } from '#/banks/banks.service';
 import { UsersService } from '#/users/users.service';
@@ -26,9 +26,123 @@ export class TransactionsService {
       relations: {
         user: true,
         banks: true,
-        rentApplications: true,
+        rentApplications: {product: true},
       }
     })
+  }
+
+  listAllOwner(page: number = 1, limit: number = 10){
+    return this.transactionsRepository.findAndCount({
+      where: {
+      transaction_type: TransactionType.OWNER,
+    },
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        user: true,
+        banks: true,
+        rentApplications: {product: true},
+      }
+    })
+  }
+
+  listAllRenter(page: number = 1, limit: number = 10){
+    return this.transactionsRepository.findAndCount({
+      where: {
+      transaction_type: TransactionType.RENTER,
+    },
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        user: true,
+        banks: true,
+        rentApplications: {product: true},
+      }
+    })
+  }
+
+  async listTransactionsByRenter(id: string) {
+    try {
+      const renter = await this.userService.findOne(id)
+      return await this.transactionsRepository.findOneOrFail({
+        where: { user: { id: renter.id } },
+      })
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
+  }
+
+  async listTransactionsByOwner(id: string) {
+    try {
+      const owner = await this.userService.findOne(id)
+      return await this.transactionsRepository.findOneOrFail({
+        where: { user: { id: owner.id } },
+      })
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
+  }
+
+  async getDetailRenterById(id: string) {
+    try {
+      return await this.transactionsRepository.findOneOrFail({
+        where: { 
+          transaction_type: TransactionType.RENTER,
+          id },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: {product: true},
+        },
+      })
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
+  }
+
+  async getDetailOwnerById(id: string) {
+    try {
+      return await this.transactionsRepository.findOneOrFail({
+        where: { 
+          transaction_type: TransactionType.OWNER,
+          id },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: {product: true},
+        },
+      })
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
   }
 
   async findOneById(id: string) {
@@ -38,7 +152,7 @@ export class TransactionsService {
         relations: {
           user: true,
           banks: true,
-          rentApplications: true,
+          rentApplications: {product: true},
         },
       })
     } catch (err) {
@@ -62,7 +176,7 @@ export class TransactionsService {
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
       transactionsEntity.transaction_proof = payload.transaction_proof
-      transactionsEntity.transaction_type = payload.transaction_type
+      transactionsEntity.transaction_type = TransactionType.RENTER
       transactionsEntity.user = findOneUserId
       transactionsEntity.banks = findOneBankId
       transactionsEntity.rentApplications = findOneRentApplicationsId
@@ -88,7 +202,8 @@ export class TransactionsService {
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
       transactionsEntity.transaction_proof = payload.transaction_proof
-      transactionsEntity.transaction_type = payload.transaction_type
+      transactionsEntity.transaction_type = TransactionType.OWNER
+      transactionsEntity.payment_status = PaymentStatus.APPROVE
       transactionsEntity.user = findOneUserId
       transactionsEntity.banks = findOneBankId
       transactionsEntity.rentApplications = findOneRentApplicationsId
@@ -112,7 +227,6 @@ export class TransactionsService {
     const transactionsEntity = new Transactions()
     transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
     transactionsEntity.transaction_proof = payload.transaction_proof
-    transactionsEntity.transaction_type = payload.transaction_type
 
     await this.transactionsRepository.update(id, transactionsEntity)
 

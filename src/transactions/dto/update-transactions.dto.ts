@@ -7,6 +7,4 @@ export class UpdateTransactionsDTO{
   @IsNotEmpty()
   transaction_proof: string;
 
-  @IsNotEmpty()
-  transaction_type: string;
 }

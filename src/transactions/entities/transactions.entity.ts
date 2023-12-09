@@ -9,6 +9,11 @@ export enum PaymentStatus {
   PENDING = 'pending',
 }
 
+export enum TransactionType {
+  OWNER = 'owner',
+  RENTER = 'renter',
+}
+
 @Entity()
 export class Transactions {
   @PrimaryGeneratedColumn('uuid')
@@ -35,8 +40,8 @@ export class Transactions {
   transaction_proof: string
 
   @Column({
-    type: 'varchar',
-    length: 50,
+    type: 'enum',
+    enum: TransactionType,
     nullable: true,
   })
   transaction_type: string

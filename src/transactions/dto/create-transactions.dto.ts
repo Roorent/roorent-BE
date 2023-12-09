@@ -16,8 +16,5 @@ export class CreateTransactionsDTO{
   @IsNotEmpty()
   transaction_proof: string;
 
-  @IsNotEmpty()
-  transaction_type: string;
-
   reason: string;
 }
