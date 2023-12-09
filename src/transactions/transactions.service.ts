@@ -7,6 +7,7 @@ import { UsersService } from '#/users/users.service';
 import { RentApplicationsService } from '#/rent_applications/rent_applications.service';
 import { CreateTransactionsDTO } from './dto/create-transactions.dto';
 import { UpdateTransactionsDTO } from './dto/update-transactions.dto';
+import { approveRejectDTO } from './dto/approveReject.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -52,7 +53,33 @@ export class TransactionsService {
     }
   }
 
-  async create(payload: CreateTransactionsDTO){
+  async createRenter(payload: CreateTransactionsDTO){
+    try {
+      const findOneUserId = await this.userService.findOne(payload.user_id)
+      const findOneBankId = await this.bankService.findOneById(payload.bank_id)
+      const findOneRentApplicationsId:any = await this.rentApplications.findOneById(payload.rent_application_id)
+
+      const transactionsEntity = new Transactions()
+      transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
+      transactionsEntity.transaction_proof = payload.transaction_proof
+      transactionsEntity.transaction_type = payload.transaction_type
+      transactionsEntity.user = findOneUserId
+      transactionsEntity.banks = findOneBankId
+      transactionsEntity.rentApplications = findOneRentApplicationsId
+
+      const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
+
+      return await this.transactionsRepository.findOneOrFail({
+        where: {
+          id: insertRentApplications.identifiers[0].id
+        }
+      })
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async createOwner(payload: CreateTransactionsDTO){
     try {
       const findOneUserId = await this.userService.findOne(payload.user_id)
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
@@ -104,12 +131,12 @@ export class TransactionsService {
     }
   }
 
-  async approveTransactions(id: string, active: any) {
+  async approveTransactions(id: string, payload: approveRejectDTO) {
     try {
       await this.findOneById(id)
   
       const transactionsEntity = new Transactions()
-      transactionsEntity.payment_status = active
+      transactionsEntity.payment_status = payload.payment_status
   
       await this.transactionsRepository.update(id, transactionsEntity)
       return await this.transactionsRepository.findOneOrFail({
@@ -126,13 +153,14 @@ export class TransactionsService {
     }
   }
 
-  async rejectTransactions(id: string, active: any) {
+  async rejectTransactions(id: string, payload: approveRejectDTO) {
     try {
       await this.findOneById(id)
-  
+
       const transactionsEntity = new Transactions()
-      transactionsEntity.payment_status = active
-  
+      transactionsEntity.payment_status = payload.payment_status
+      transactionsEntity.reason = payload.reason
+
       await this.transactionsRepository.update(id, transactionsEntity)
       return await this.transactionsRepository.findOneOrFail({
         where: {id},
@@ -142,7 +170,7 @@ export class TransactionsService {
           rentApplications: true,
         },
       })
-      
+
     } catch (err) {
       throw err
     }

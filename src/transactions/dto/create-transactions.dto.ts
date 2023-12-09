@@ -18,4 +18,6 @@ export class CreateTransactionsDTO{
 
   @IsNotEmpty()
   transaction_type: string;
+
+  reason: string;
 }

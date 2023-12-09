@@ -41,6 +41,12 @@ export class Transactions {
   })
   transaction_type: string
 
+  @Column({
+    type: 'text',
+    nullable: true
+  })
+  reason: string
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
     nullable: false,

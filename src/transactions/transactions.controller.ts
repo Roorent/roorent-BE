@@ -8,6 +8,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { storageTransactions } from './helper/upload-transactions';
 import { of } from 'rxjs';
 import { join } from 'path';
+import { approveRejectDTO } from './dto/approveReject.dto';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -53,9 +54,21 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post()
-  async create(@Body() payload: CreateTransactionsDTO) {
-    const data = await this.transactionService.create(payload)
+  @Post('renter')
+  async createRenter(@Body() payload: CreateTransactionsDTO) {
+    const data = await this.transactionService.createRenter(payload)
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('renter')
+  async createOwner(@Body() payload: CreateTransactionsDTO) {
+    const data = await this.transactionService.createOwner(payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -102,9 +115,9 @@ export class TransactionsController {
   @Put('approve/:id')
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('payment_status') payment_status: string,
+    @Body() payload: approveRejectDTO,
   ) {
-    const data = await this.transactionService.approveTransactions(id, payment_status)
+    const data = await this.transactionService.approveTransactions(id, payload)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
@@ -116,9 +129,9 @@ export class TransactionsController {
   @Put('reject/:id')
   async reject(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('payment_status') payment_status: string,
+    @Body() payload: approveRejectDTO
   ) {
-    const data = await this.transactionService.rejectTransactions(id, payment_status)
+    const data = await this.transactionService.rejectTransactions(id, payload)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
