@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { RentApplicationsService } from './rent_applications.service';
 import { HttpStatusCode } from 'axios';
 import { CreateRentApplicationsDTO } from './dto/create-rent_applications.dto';
@@ -25,9 +25,14 @@ export class RentApplicationsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post()
-  async create(@Body() payload: CreateRentApplicationsDTO) {
-    const data = await this.rentApplicationsService.create(payload)
+  @Post(':id')
+  async create(
+    @Req() req,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreateRentApplicationsDTO )
+    {
+    const userId = req.user.id 
+    const data = await this.rentApplicationsService.create(id, userId, payload)
 
     return {
       statusCode: HttpStatus.CREATED,

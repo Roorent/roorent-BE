@@ -4,10 +4,6 @@ export class CreateTransactionsDTO{
   @IsNotEmpty()
   bank_id: string;
 
-  @IsNotEmpty()
-  user_id: string;
-
-  @IsNotEmpty()
   rent_application_id: string;
 
   @IsNotEmpty()

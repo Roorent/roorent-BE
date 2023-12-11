@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { HttpStatusCode } from 'axios';
@@ -80,9 +80,14 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('renter')
-  async createRenter(@Body() payload: CreateTransactionsDTO) {
-    const data = await this.transactionService.createRenter(payload)
+  @Post('renter-to-admin/:id')
+  async createRenter(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreateTransactionsDTO,
+    @Req() req,
+    ) {
+    const userId = req.user.id
+    const data = await this.transactionService.createRenter(id, userId, payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -92,9 +97,11 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('owner')
-  async createOwner(@Body() payload: CreateTransactionsDTO) {
-    const data = await this.transactionService.createOwner(payload)
+  @Post('admin-to-owner/:id')
+  async createOwner(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreateTransactionsDTO) {
+    const data = await this.transactionService.createOwner(id, payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -187,7 +194,7 @@ export class TransactionsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list-renter/:id')
-  async getProductsByRenter(@Param('id', ParseUUIDPipe) id: string) {
+  async getTransactionsByRenter(@Param('id', ParseUUIDPipe) id: string) {
     return {
       data: await this.transactionService.listTransactionsByRenter(id),
       statusCode: HttpStatus.OK,
@@ -196,8 +203,18 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('/list-renter-owner/:id')
+  async getTransactionsRenterByOwner(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      data: await this.transactionService.listTransactionsRenterByOwner(id),
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('/list-owner/:id')
-  async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+  async getTransactionsByOwner(@Param('id', ParseUUIDPipe) id: string) {
     return {
       data: await this.transactionService.listTransactionsByOwner(id),
       statusCode: HttpStatus.OK,

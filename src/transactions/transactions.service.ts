@@ -16,7 +16,7 @@ export class TransactionsService {
     private transactionsRepository: Repository<Transactions>,
     private bankService: BanksService,
     private userService: UsersService,
-    private rentApplications: RentApplicationsService,
+    private rentApplicationsService: RentApplicationsService,
   ){}
 
   findAll(page: number = 1, limit: number = 10){
@@ -84,6 +84,29 @@ export class TransactionsService {
       const owner = await this.userService.findOne(id)
       return await this.transactionsRepository.findOneOrFail({
         where: { user: { id: owner.id } },
+      })
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
+  }
+
+  async listTransactionsRenterByOwner(id: string) {
+    try {
+      const renter:any = await this.rentApplicationsService.findOneById(id)
+      return await this.transactionsRepository.findOneOrFail({
+        where: { rentApplications: {product: renter.id} },
+        relations: {
+        user: true,
+        banks: true,
+        rentApplications: {product: true},
+      }
       })
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
@@ -167,11 +190,11 @@ export class TransactionsService {
     }
   }
 
-  async createRenter(payload: CreateTransactionsDTO){
+  async createRenter(id: string, userId: string, payload: CreateTransactionsDTO){
     try {
-      const findOneUserId = await this.userService.findOne(payload.user_id)
+      const findOneUserId = await this.userService.findOne(userId)
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
-      const findOneRentApplicationsId:any = await this.rentApplications.findOneById(payload.rent_application_id)
+      const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(id)
 
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
@@ -186,18 +209,23 @@ export class TransactionsService {
       return await this.transactionsRepository.findOneOrFail({
         where: {
           id: insertRentApplications.identifiers[0].id
-        }
+        },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: {product: true},
+        },
       })
     } catch (err) {
       throw err
     }
   }
 
-  async createOwner(payload: CreateTransactionsDTO){
+  async createOwner(id: string, payload: CreateTransactionsDTO){
     try {
-      const findOneUserId = await this.userService.findOne(payload.user_id)
+      const findOneUserId = await this.userService.findOne(id)
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
-      const findOneRentApplicationsId:any = await this.rentApplications.findOneById(payload.rent_application_id)
+      const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(payload.rent_application_id)
 
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)

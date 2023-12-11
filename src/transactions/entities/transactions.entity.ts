@@ -10,8 +10,8 @@ export enum PaymentStatus {
 }
 
 export enum TransactionType {
-  OWNER = 'owner',
-  RENTER = 'renter',
+  OWNER = 'admin to owner',
+  RENTER = 'renter to admin',
 }
 
 @Entity()

@@ -3,6 +3,10 @@ import { Transactions } from "#/transactions/entities/transactions.entity";
 import { Users } from "#/users/entities/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
+export enum RentalType {
+  DAILY = 'harian',
+  MONTHLY = 'bulanan',
+}
 @Entity()
 export class RentApplications {
   @PrimaryGeneratedColumn('uuid')
@@ -21,10 +25,10 @@ export class RentApplications {
   lease_expiration: Date
 
   @Column({
-    type: 'varchar',
-    length: 60,
+    type: 'enum',
+    enum: RentalType
   })
-  rental_type: string
+  rental_type: RentalType
 
   @Column({
     type: 'int',

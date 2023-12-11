@@ -1,12 +1,7 @@
-import { IsInt, IsNotEmpty } from 'class-validator'
+import { IsEnum, IsInt, IsNotEmpty } from 'class-validator'
+import { RentalType } from '../entities/rent_applications.entity'
 
 export class CreateRentApplicationsDTO {
-  @IsNotEmpty()
-  user_id: string
-
-  @IsNotEmpty()
-  product_id: string
-
   @IsNotEmpty()
   lease_start: Date
 
@@ -14,13 +9,9 @@ export class CreateRentApplicationsDTO {
   lease_expiration: Date
 
   @IsNotEmpty()
-  rental_type: string
+  @IsEnum(RentalType)
+  rental_type: RentalType
 
   @IsNotEmpty()
-  @IsInt()
-  price: number
-
-  @IsNotEmpty()
-  @IsInt()
-  total_price: number
+  amount: number
 }
