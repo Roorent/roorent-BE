@@ -123,13 +123,7 @@ export class AuthService {
 
       return { accessToken: await this.jwtService.sign(datas) }
     } catch (err) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Invalid credential',
-        },
-        HttpStatus.UNAUTHORIZED,
-      )
+      throw err
     }
   }
 
