@@ -196,6 +196,15 @@ export class TransactionsService {
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
       const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(id)
 
+      const user = await this.userService.findOne(findOneBankId.user.id)
+
+      let userAdmin:any
+      if (user.level.name == 'admin') {
+        userAdmin = user.level.id
+      }
+
+      return user
+
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
       transactionsEntity.transaction_proof = payload.transaction_proof
@@ -204,18 +213,18 @@ export class TransactionsService {
       transactionsEntity.banks = findOneBankId
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
-      const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
+      // const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
 
-      return await this.transactionsRepository.findOneOrFail({
-        where: {
-          id: insertRentApplications.identifiers[0].id
-        },
-        relations: {
-          user: true,
-          banks: true,
-          rentApplications: {product: true},
-        },
-      })
+      // return await this.transactionsRepository.findOneOrFail({
+      //   where: {
+      //     id: insertRentApplications.identifiers[0].id
+      //   },
+      //   relations: {
+      //     user: true,
+      //     banks: true,
+      //     rentApplications: {product: true},
+      //   },
+      // })
     } catch (err) {
       throw err
     }

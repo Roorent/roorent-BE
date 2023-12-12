@@ -90,6 +90,9 @@ export class UsersService {
         where: {
           id,
         },
+        relations: {
+          level: true,
+        },
       })
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
