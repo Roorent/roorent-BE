@@ -8,8 +8,10 @@ export class PhotoReviews{
 
   @Column({
     type: 'varchar',
+    array: true,
+    nullable: true,
   })
-  photo: string
+  photo: string[];
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

@@ -1,7 +1,8 @@
 import { Banks } from "#/banks/entities/banks.entity";
 import { RentApplications } from "#/rent_applications/entities/rent_applications.entity";
+import { Reviews } from "#/reviews/entities/reviews.entity";
 import { Users } from "#/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
 
 export enum PaymentStatus {
   APPROVE = 'approve',
@@ -81,4 +82,7 @@ export class Transactions {
 
   @ManyToOne(() => RentApplications, (rentApplications) => rentApplications.transactions)
   rentApplications: RentApplications
+
+  @OneToOne(() => Reviews, reviews => reviews.transactions) // Definisikan relasi One-to-One
+  review: Reviews; // Relasi ke entitas Review
 }

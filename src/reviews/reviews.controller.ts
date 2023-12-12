@@ -9,15 +9,19 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common'
 import { ReviewsService } from './reviews.service'
 import { CreateReviewDTO } from './dto/create-review.dto'
 import { UpdateReviewDTO } from './dto/update-review.dto'
+import { AuthGuard } from '@nestjs/passport'
 
 @Controller('reviews')
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Query('page') page: number, @Query('limit') limit: number) {
     const [data, count] = await this.reviewService.findAll(page, limit)
@@ -30,6 +34,7 @@ export class ReviewsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.reviewService.findOne(id)
@@ -41,6 +46,7 @@ export class ReviewsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('/product/:id')
   async findByProduct(
     @Param('id', ParseUUIDPipe) id: string,
@@ -61,17 +67,24 @@ export class ReviewsController {
     }
   }
 
-  @Post()
-  async create(@Body() payload: CreateReviewDTO) {
-    const data = await this.reviewService.create(payload)
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id')
+  async create(
+    @Req() req,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreateReviewDTO )
+    {
+    const userId = req.user.id 
+    const data = await this.reviewService.create(id, userId, payload)
 
     return {
       statusCode: HttpStatus.CREATED,
-      message: 'Success',
+      message: 'success',
       data,
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -86,6 +99,7 @@ export class ReviewsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.reviewService.remove(id)

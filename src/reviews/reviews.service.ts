@@ -6,12 +6,17 @@ import { CreateReviewDTO } from './dto/create-review.dto'
 import { UsersService } from '#/users/users.service'
 import { UpdateReviewDTO } from './dto/update-review.dto'
 import { ProductsService } from '#/products/products.service'
+import { PhotoReviews } from '#/photo_reviews/entities/photo_reviews.entity'
+import { TransactionsService } from '#/transactions/transactions.service'
 
 @Injectable()
 export class ReviewsService {
   constructor(
     @InjectRepository(Reviews)
     private reviewsRepository: Repository<Reviews>,
+    @InjectRepository(PhotoReviews)
+    private photoReviewsRepository: Repository<PhotoReviews>,
+    private transactionsService: TransactionsService,
     private userService: UsersService,
     private productService: ProductsService,
   ) {}
@@ -46,30 +51,46 @@ export class ReviewsService {
     }
   }
 
-  async create(payload: CreateReviewDTO) {
+  async create(id: string, userId: string, payload: CreateReviewDTO) {
     try {
       if (payload.rating <= 0 || payload.rating > 5) {
         return 'Rating tidak sesuai'
       }
 
-      const findUserId = await this.userService.findOne(payload.userId)
-      const findProductId: any = await this.productService.findOneById(
-        payload.productId,
-      )
+      const findOneUser = await this.userService.findOne(userId)
+      const findOneProduct: any = await this.productService.findOneById(id)
+      const findTransactionId: any = await this.transactionsService.findOneById(payload.transactionsId)
 
       const reviewEntity = new Reviews()
       reviewEntity.rating = payload.rating
       reviewEntity.content = payload.content
-      reviewEntity.user = findUserId
-      reviewEntity.product = findProductId
+      reviewEntity.user = findOneUser
+      reviewEntity.product = findOneProduct
+      reviewEntity.transactions = findTransactionId
 
-      const insertReview = await this.reviewsRepository.insert(reviewEntity)
+      const insertReviews = await this.reviewsRepository.insert(reviewEntity)
 
-      return this.reviewsRepository.findOneOrFail({
-        where: {
-          id: insertReview.identifiers[0].id,
-        },
-      })
+      const photoReviewsEntity = new PhotoReviews()
+      if (Array.isArray(payload.photo)) {
+        photoReviewsEntity.photo = payload.photo
+      } else {
+        photoReviewsEntity.photo = [payload.photo]
+      }
+      photoReviewsEntity.reviews = insertReviews.identifiers[0].id
+      const insertPhotoReviews = await this.photoReviewsRepository.insert(photoReviewsEntity)
+
+      return ([
+        await this.reviewsRepository.findOneOrFail({
+          where: {
+            id: insertReviews.identifiers[0].id,
+          },
+        }),
+        await this.photoReviewsRepository.findOneOrFail({
+          where: {
+            id: insertPhotoReviews.identifiers[0].id,
+          },
+        })
+       ] )
     } catch (err) {
       throw err
     }
