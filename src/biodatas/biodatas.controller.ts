@@ -20,6 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { storagePhotoProfile } from './helpers/upload-profile';
 import { join } from 'path';
 import { of } from 'rxjs';
+import { storagePhotoKtp } from './helpers/upload-ktp';
 
 @Controller('biodatas')
 export class BiodatasController {
@@ -38,6 +39,21 @@ export class BiodatasController {
    return {
       filename: photoProfile?.filename
    }
+  }
+
+  @Post('upload-ktp')
+  @UseInterceptors(FileInterceptor('photo_ktp', storagePhotoKtp))
+  uploadPhotKtp(@UploadedFile() photoKtp: Express.Multer.File){
+   if(typeof photoKtp?.filename == "undefined"){
+    return {
+      statusCode: HttpStatus.BAD_REQUEST, 
+      message: "error upload file"
+    }
+   }
+
+   return {
+    filename: photoKtp?.filename,
+  }
   }
 
   @Get('profile-image/:type/:filename')

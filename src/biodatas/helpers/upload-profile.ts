@@ -12,13 +12,7 @@ const validMimeTypes: validMimeType[] = [
 
 export const storagePhotoProfile = {
     storage: diskStorage({
-        destination: (req, file, callback) => {
-            if (req?.query?.type == "ktp"){
-                return callback(null, `upload/ktp`)
-            } else {
-                return callback(null, `upload/profile`)
-            }
-        },
+        destination: 'upload/profile',
         filename: (req, file, callback) => {
             const unique = randomUUID();
             const ext = extname(file.originalname);
