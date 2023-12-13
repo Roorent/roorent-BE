@@ -326,4 +326,25 @@ export class TransactionsService {
       throw err
     }
   }
+
+  async findByStatus(status: string){
+    let statusPayment: any;
+
+    if (status === 'approve') {
+      statusPayment = PaymentStatus.APPROVE;
+    } else if (status === 'reject') {
+      statusPayment = PaymentStatus.REJECT;
+    } else if (status === 'pending') {
+      statusPayment = PaymentStatus.PENDING;
+    }
+
+    try {
+      const result = await this.transactionsRepository.find({
+        where: { payment_status: statusPayment },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

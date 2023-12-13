@@ -53,6 +53,16 @@ export class TransactionsController {
     }
   }
 
+  @Get('/status')
+  async findByStatus(@Query('status') status: string) {
+      const data = await this.transactionService.findByStatus(status);
+      return {
+        statusCode: HttpStatusCode.Ok,
+        message: 'success',
+        data,
+      }
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('all-owner')
   async getAllOwner(@Query('page') page: number, @Query('limit') limit: number) {
@@ -221,4 +231,5 @@ export class TransactionsController {
       message: 'Success',
     }
   }
+
 }
