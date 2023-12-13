@@ -62,12 +62,28 @@ export class RentApplicationsService {
         rentApp.total_price = findOneProduct.monthly_price * payload.amount
       }
 
+      const fee = {
+        kos: 5,
+        gedung: 10,
+        hotel: 10
+      }
+
+      let adminFee:  any
+      if(findOneProduct.type === 'Kos'){
+        adminFee = fee.kos
+      } if (findOneProduct.type === 'Hotel'){
+        adminFee = fee.hotel
+      } if (findOneProduct.type === 'Gedung'){
+        adminFee = fee.gedung
+      }
+
       const rentApplicationsEntity = new RentApplications()
       rentApplicationsEntity.lease_start = payload.lease_start
       rentApplicationsEntity.lease_expiration = payload.lease_expiration
       rentApplicationsEntity.rental_type = payload.rental_type
       rentApplicationsEntity.price = rentApp.price
       rentApplicationsEntity.total_price = rentApp.total_price
+      rentApplicationsEntity.fee = adminFee
       rentApplicationsEntity.user = findOneUser
       rentApplicationsEntity.product = findOneProduct
 

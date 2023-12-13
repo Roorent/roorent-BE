@@ -8,6 +8,7 @@ import { RentApplicationsService } from '#/rent_applications/rent_applications.s
 import { CreateTransactionsDTO } from './dto/create-transactions.dto';
 import { UpdateTransactionsDTO } from './dto/update-transactions.dto';
 import { approveRejectDTO } from './dto/approveReject.dto';
+import puppeteer from 'puppeteer';
 
 @Injectable()
 export class TransactionsService {
@@ -196,15 +197,16 @@ export class TransactionsService {
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
       const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(id)
 
-      const user = await this.userService.findOne(findOneBankId.user.id)
+      // const user = await this.userService.findOne(findOneBankId.user.id)
 
-      let userAdmin:any
-      if (user.level.name == 'admin') {
-        userAdmin = user.level.id
-      }
+      // let userAdmin:any
+      // if (user.level.name == 'admin') {
+      //   userAdmin = user.level.id
+      // }
 
-      return user
+      // return user
 
+     
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
       transactionsEntity.transaction_proof = payload.transaction_proof
@@ -213,18 +215,18 @@ export class TransactionsService {
       transactionsEntity.banks = findOneBankId
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
-      // const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
+      const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
 
-      // return await this.transactionsRepository.findOneOrFail({
-      //   where: {
-      //     id: insertRentApplications.identifiers[0].id
-      //   },
-      //   relations: {
-      //     user: true,
-      //     banks: true,
-      //     rentApplications: {product: true},
-      //   },
-      // })
+      return await this.transactionsRepository.findOneOrFail({
+        where: {
+          id: insertRentApplications.identifiers[0].id
+        },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: {product: true},
+        },
+      })
     } catch (err) {
       throw err
     }
@@ -236,6 +238,9 @@ export class TransactionsService {
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
       const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(payload.rent_application_id)
 
+      const totalfee = findOneRentApplicationsId.total_price * (findOneRentApplicationsId.fee / 100)
+      const totalPrice = findOneRentApplicationsId.total_price - totalfee
+
       const transactionsEntity = new Transactions()
       transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
       transactionsEntity.transaction_proof = payload.transaction_proof
@@ -243,6 +248,7 @@ export class TransactionsService {
       transactionsEntity.payment_status = PaymentStatus.APPROVE
       transactionsEntity.user = findOneUserId
       transactionsEntity.banks = findOneBankId
+      transactionsEntity.totalPrice = totalPrice
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
       const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
@@ -250,7 +256,12 @@ export class TransactionsService {
       return await this.transactionsRepository.findOneOrFail({
         where: {
           id: insertRentApplications.identifiers[0].id
-        }
+        },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: {product: true},
+        },
       })
     } catch (err) {
       throw err
@@ -346,5 +357,46 @@ export class TransactionsService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async generatepdfTransaction(){
+    const browser = await puppeteer.launch({
+      args: ['--allow-file-access-from-files']
+    })
+
+    const page = await browser.newPage()
+    const [allTransactions] = await this.findAll()
+    // const oneTransactions = await this.findOneById(transactionsLoggedInId)
+    const htmlTemplate = `
+    <html>
+      <head></head>
+      <body>
+        <h1>Table Data User</h1>
+          <table>
+          <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+          </tr>
+          ${
+            allTransactions.map((transactions) => 
+              `<tr>
+                <td>${transactions.id}</td>
+                <td>${transactions.transaction_type}</td>
+                <td>${transactions.rentApplications}</td>
+              </tr>`,
+            ).join('')
+          }
+        </table>
+      </body>
+      </html>
+    `
+
+    await page.setContent(htmlTemplate)
+
+    const pdfBuffer = await page.pdf({})
+
+    browser.close()
+    return pdfBuffer;
   }
 }

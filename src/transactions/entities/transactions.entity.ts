@@ -53,6 +53,12 @@ export class Transactions {
   })
   reason: string
 
+  @Column({
+    type: 'int',
+    nullable: true
+  })
+  totalPrice: number
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
     nullable: false,

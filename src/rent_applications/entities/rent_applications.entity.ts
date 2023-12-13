@@ -42,6 +42,12 @@ export class RentApplications {
   })
   total_price: number
 
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  fee: Number 
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
     nullable: false,

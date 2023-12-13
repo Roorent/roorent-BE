@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { HttpStatusCode } from 'axios';
@@ -61,6 +61,22 @@ export class TransactionsController {
         message: 'success',
         data,
       }
+  }
+
+  @Get('export')
+  @UseGuards(AuthGuard('jwt'))
+  async generatePdfUser(
+    @Res() res: any,
+    // @Req() req,
+    @Headers() headers: any
+  ){
+    const pdfBuffer = await this.transactionService.generatepdfTransaction()
+
+    //set header to response 
+    headers['content-type']  = 'application/pdf'
+    headers['content-disposition'] = 'inline; filename=example.pdf'
+
+    res.end(pdfBuffer, 'binary')
   }
 
   @UseGuards(AuthGuard('jwt'))
