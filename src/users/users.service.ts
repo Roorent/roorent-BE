@@ -9,6 +9,8 @@ import { EntityNotFoundError, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Biodatas } from '#/biodatas/entities/biodatas.entity'
+import { ReactiveUserDto } from './dto/reactive-user.dto'
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class UsersService {
@@ -194,7 +196,7 @@ export class UsersService {
     }
   }
 
-  async getReactive(id: string, active: any) {
+  async getReactive(id: string, payload: ReactiveUserDto) {
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
@@ -211,11 +213,23 @@ export class UsersService {
         )
       }
 
+      const saltGenerate = await bcrypt.genSalt()
+      const hash = await bcrypt.hash(payload.password, saltGenerate)
+
       const biodataId = user.biodata.id
       const biodatasEntity = new Biodatas()
-      biodatasEntity.isActive = active
+      biodatasEntity.first_name = payload.first_name
+      biodatasEntity.last_name = payload.last_name
+      biodatasEntity.photo_ktp = payload.photo_ktp
+      biodatasEntity.isActive = payload.isActive
+
+      const usersEntity = new Users()
+      usersEntity.email = payload.email
+      usersEntity.salt = saltGenerate
+      usersEntity.password = hash
 
       await this.biodatasRepository.update(biodataId, biodatasEntity)
+      await this.usersRepository.update(id, usersEntity)
 
       return await this.biodatasRepository.findOneOrFail({
         where: { user: { id } },

@@ -14,6 +14,7 @@ import {
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { AuthGuard } from '@nestjs/passport'
+import { ReactiveUserDto } from './dto/reactive-user.dto'
 
 @Controller('users')
 export class UsersController {
@@ -70,9 +71,9 @@ export class UsersController {
   @Put('/reactive/:id')
   async getReactive(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('isActive') isActive: string,
+    @Body() payload: ReactiveUserDto,
   ) {
-    const data = await this.usersService.getReactive(id, isActive)
+    const data = await this.usersService.getReactive(id, payload)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
