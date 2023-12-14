@@ -1,8 +1,18 @@
-import { Banks } from "#/banks/entities/banks.entity";
-import { RentApplications } from "#/rent_applications/entities/rent_applications.entity";
-import { Reviews } from "#/reviews/entities/reviews.entity";
-import { Users } from "#/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import { Banks } from '#/banks/entities/banks.entity'
+import { RentApplications } from '#/rent_applications/entities/rent_applications.entity'
+import { Reviews } from '#/reviews/entities/reviews.entity'
+import { Users } from '#/users/entities/user.entity'
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from 'typeorm'
 
 export enum PaymentStatus {
   APPROVE = 'approve',
@@ -21,10 +31,10 @@ export class Transactions {
   id: string
 
   @Column({
-    type: 'date',
+    type: 'bigint',
     nullable: true,
   })
-  transaction_deadline: Date
+  expired_payment: string
 
   @Column({
     type: 'enum',
@@ -49,13 +59,13 @@ export class Transactions {
 
   @Column({
     type: 'text',
-    nullable: true
+    nullable: true,
   })
   reason: string
 
   @Column({
     type: 'int',
-    nullable: true
+    nullable: true,
   })
   totalPrice: number
 
@@ -86,9 +96,12 @@ export class Transactions {
   @ManyToOne(() => Users, (user) => user.transactions)
   user: Users
 
-  @ManyToOne(() => RentApplications, (rentApplications) => rentApplications.transactions)
+  @ManyToOne(
+    () => RentApplications,
+    (rentApplications) => rentApplications.transactions,
+  )
   rentApplications: RentApplications
 
-  @OneToOne(() => Reviews, reviews => reviews.transactions) // Definisikan relasi One-to-One
-  review: Reviews; // Relasi ke entitas Review
+  @OneToOne(() => Reviews, (reviews) => reviews.transactions) // Definisikan relasi One-to-One
+  review: Reviews // Relasi ke entitas Review
 }

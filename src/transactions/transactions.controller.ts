@@ -1,43 +1,60 @@
-import { Body, Controller, Delete, Get, Headers, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
-import { AuthGuard } from '@nestjs/passport';
-import { HttpStatusCode } from 'axios';
-import { CreateTransactionsDTO } from './dto/create-transactions.dto';
-import { UpdateTransactionsDTO } from './dto/update-transactions.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { storageTransactions } from './helper/upload-transactions';
-import { of } from 'rxjs';
-import { join } from 'path';
-import { approveRejectDTO } from './dto/approveReject.dto';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
+import { TransactionsService } from './transactions.service'
+import { AuthGuard } from '@nestjs/passport'
+import { HttpStatusCode } from 'axios'
+import { CreateTransactionsDTO } from './dto/create-transactions.dto'
+import { UpdateTransactionsDTO } from './dto/update-transactions.dto'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { storageTransactions } from './helper/upload-transactions'
+import { of } from 'rxjs'
+import { join } from 'path'
+import { approveRejectDTO } from './dto/approveReject.dto'
 
 @Controller('transactions')
 export class TransactionsController {
-  constructor(
-    private transactionService: TransactionsService,
-  ){}
+  constructor(private transactionService: TransactionsService) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Post('upload-transactions')
   @UseInterceptors(FileInterceptor('photo_transactions', storageTransactions))
-  uploadPhotoProfile(@UploadedFile() photoTransactions: Express.Multer.File){
-   if(typeof photoTransactions?.filename == "undefined"){
-    return {
-      statusCode: HttpStatus.BAD_REQUEST, 
-      message: "error upload file"
+  uploadPhotoProfile(@UploadedFile() photoTransactions: Express.Multer.File) {
+    if (typeof photoTransactions?.filename == 'undefined') {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'error upload file',
+      }
     }
-   }
 
-   return {
-      filename: photoTransactions?.filename
-   }
+    return {
+      filename: photoTransactions?.filename,
+    }
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('photo_transactions/:type/:filename')
-  getProfileImage(@Param('type') type: string,@Param('filename') filename: string, @Res() res: any){
-    return of(
-      res.sendFile(join(process.cwd(), `upload/${type}/${filename}`))
-    )
+  getProfileImage(
+    @Param('type') type: string,
+    @Param('filename') filename: string,
+    @Res() res: any,
+  ) {
+    return of(res.sendFile(join(process.cwd(), `upload/${type}/${filename}`)))
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -55,12 +72,12 @@ export class TransactionsController {
 
   @Get('/status')
   async findByStatus(@Query('status') status: string) {
-      const data = await this.transactionService.findByStatus(status);
-      return {
-        statusCode: HttpStatusCode.Ok,
-        message: 'success',
-        data,
-      }
+    const data = await this.transactionService.findByStatus(status)
+    return {
+      statusCode: HttpStatusCode.Ok,
+      message: 'success',
+      data,
+    }
   }
 
   @Get('export')
@@ -68,12 +85,12 @@ export class TransactionsController {
   async generatePdfUser(
     @Res() res: any,
     // @Req() req,
-    @Headers() headers: any
-  ){
+    @Headers() headers: any,
+  ) {
     const pdfBuffer = await this.transactionService.generatepdfTransaction()
 
-    //set header to response 
-    headers['content-type']  = 'application/pdf'
+    //set header to response
+    headers['content-type'] = 'application/pdf'
     headers['content-disposition'] = 'inline; filename=example.pdf'
 
     res.end(pdfBuffer, 'binary')
@@ -81,8 +98,14 @@ export class TransactionsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('all-owner')
-  async getAllOwner(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.transactionService.listAllOwner(page, limit)
+  async getAllOwner(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const [data, count] = await this.transactionService.listAllOwner(
+      page,
+      limit,
+    )
 
     return {
       statusCode: HttpStatusCode.Ok,
@@ -94,8 +117,14 @@ export class TransactionsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('all-renter')
-  async getAllRenter(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.transactionService.listAllRenter(page, limit)
+  async getAllRenter(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const [data, count] = await this.transactionService.listAllRenter(
+      page,
+      limit,
+    )
 
     return {
       statusCode: HttpStatusCode.Ok,
@@ -111,7 +140,7 @@ export class TransactionsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: CreateTransactionsDTO,
     @Req() req,
-    ) {
+  ) {
     const userId = req.user.id
     const data = await this.transactionService.createRenter(id, userId, payload)
 
@@ -126,7 +155,8 @@ export class TransactionsController {
   @Post('admin-to-owner/:id')
   async createOwner(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() payload: CreateTransactionsDTO) {
+    @Body() payload: CreateTransactionsDTO,
+  ) {
     const data = await this.transactionService.createOwner(id, payload)
 
     return {
@@ -194,9 +224,9 @@ export class TransactionsController {
   @Put('approve/:id')
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() payload: approveRejectDTO,
+    @Body('status') status: string,
   ) {
-    const data = await this.transactionService.approveTransactions(id, payload)
+    const data = await this.transactionService.approveTransactions(id, status)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
@@ -208,7 +238,7 @@ export class TransactionsController {
   @Put('reject/:id')
   async reject(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() payload: approveRejectDTO
+    @Body() payload: approveRejectDTO,
   ) {
     const data = await this.transactionService.rejectTransactions(id, payload)
     return {
@@ -247,5 +277,4 @@ export class TransactionsController {
       message: 'Success',
     }
   }
-
 }

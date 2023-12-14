@@ -53,11 +53,12 @@ export class RentApplicationsService {
       const findOneUser = await this.userService.findOne(userId)
       const findOneProduct: any = await this.productsService.findOneById(id)
 
-      let rentApp: any = {};
+      let rentApp: any = {}
       if (payload.rental_type === 'harian') {
         rentApp.price = findOneProduct.daily_price
         rentApp.total_price = findOneProduct.daily_price * payload.amount
-      } if (payload.rental_type === 'bulanan') {
+      }
+      if (payload.rental_type === 'bulanan') {
         rentApp.price = findOneProduct.monthly_price
         rentApp.total_price = findOneProduct.monthly_price * payload.amount
       }
@@ -65,15 +66,17 @@ export class RentApplicationsService {
       const fee = {
         kos: 5,
         gedung: 10,
-        hotel: 10
+        hotel: 10,
       }
 
-      let adminFee:  any
-      if(findOneProduct.type === 'Kos'){
+      let adminFee: any
+      if (findOneProduct.type === 'Kos') {
         adminFee = fee.kos
-      } if (findOneProduct.type === 'Hotel'){
+      }
+      if (findOneProduct.type === 'Hotel') {
         adminFee = fee.hotel
-      } if (findOneProduct.type === 'Gedung'){
+      }
+      if (findOneProduct.type === 'Gedung') {
         adminFee = fee.gedung
       }
 
@@ -138,8 +141,8 @@ export class RentApplicationsService {
       await this.findOneById(id)
       await this.rentApplicationsRepository.softDelete(id)
       return 'success'
-    } catch (e) {
-      throw e
+    } catch (err) {
+      throw err
     }
   }
 }
