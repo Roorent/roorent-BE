@@ -121,7 +121,7 @@ export class AuthService {
         email: userOne.email,
       }
 
-      return { accessToken: await this.jwtService.sign(datas) }
+      return { access_token: await this.jwtService.sign(datas) }
     } catch (err) {
       throw err
     }

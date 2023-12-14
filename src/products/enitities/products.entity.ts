@@ -19,6 +19,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
+export enum ProductsType {
+  KOS = 'Kos',
+  HOTEL = 'Hotel',
+  GEDUNG = 'Gedung'
+}
 @Entity()
 export class Products {
   @PrimaryGeneratedColumn('uuid')
@@ -31,8 +36,8 @@ export class Products {
   name: string
 
   @Column({
-    type: 'varchar',
-    length: 25,
+    type: 'enum',
+    enum: ProductsType
   })
   type: string
 

@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Products } from './enitities/products.entity'
+import { Products, ProductsType } from './enitities/products.entity'
 import { Like, EntityNotFoundError, Repository } from 'typeorm'
 import { UsersService } from '#/users/users.service'
 import { CreateProductsDTO } from './dto/create-products.dto'
@@ -9,6 +9,7 @@ import { UpdateProductsDTO } from './dto/update-products.dto'
 import { ProductDescriptions } from '#/product_descriptions/entities/product_descriptions.entity'
 import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
 import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
+import { Reviews } from '#/reviews/entities/reviews.entity'
 
 @Injectable()
 export class ProductsService {
@@ -17,6 +18,8 @@ export class ProductsService {
     private productsRepository: Repository<Products>,
     private userService: UsersService,
     private citiesService: CitiesService,
+    @InjectRepository(Reviews)
+    private reviewsRepository: Repository<Reviews>,
     @InjectRepository(ProductDescriptions)
     private productDescriptionsRepository: Repository<ProductDescriptions>,
     @InjectRepository(SpecialRules)
@@ -25,8 +28,39 @@ export class ProductsService {
     private photoProductsRepository: Repository<PhotoProducts>,
   ) {}
 
-  findAll(page: number = 1, limit: number = 10) {
+  findAllKos(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
+      where: {type: ProductsType.KOS},
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        user: true,
+        cities: true,
+        productDescriptions: true,
+        specialRules: true,
+        photoProducts: true,
+      },
+    })
+  }
+
+  findAllHotel(page: number = 1, limit: number = 10) {
+    return this.productsRepository.findAndCount({
+      where: {type: ProductsType.HOTEL},
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        user: true,
+        cities: true,
+        productDescriptions: true,
+        specialRules: true,
+        photoProducts: true,
+      },
+    })
+  }
+
+  findAllGedung(page: number = 1, limit: number = 10) {
+    return this.productsRepository.findAndCount({
+      where: {type: ProductsType.GEDUNG},
       skip: --page * limit,
       take: limit,
       relations: {
@@ -63,12 +97,14 @@ export class ProductsService {
     }
   }
 
-  async create(
+  async create( 
+    userId: string,
     payload: CreateProductsDTO,
   ) {
     try {
-      const findOneUserId = await this.userService.findOne(payload.user_id)
-      const findOneCityId = await this.citiesService.findOne(payload.city_id)
+      const findOneUserId = await this.userService.findOne(userId)
+      const findCity = await this.citiesService.findOneByName(payload.city)
+      const cityId:any = findCity.id
 
       const productDescriptionsEntity = new ProductDescriptions()
       productDescriptionsEntity.specifications = payload.specifications
@@ -78,7 +114,7 @@ export class ProductsService {
       const specialRulesEntity = new SpecialRules()
       specialRulesEntity.max_person = payload.max_person
       specialRulesEntity.gender = payload.gender
-      specialRulesEntity.note = payload.note
+      specialRulesEntity.notes = payload.notes
      
       const insertProductDescriptions = await this.productDescriptionsRepository.insert(productDescriptionsEntity)
       const insertSpecialRules = await this.specialRulesRepository.insert(specialRulesEntity)
@@ -92,7 +128,7 @@ export class ProductsService {
       productsEntity.address = payload.address
       productsEntity.location = payload.location
       productsEntity.user = findOneUserId
-      productsEntity.cities = findOneCityId
+      productsEntity.cities = cityId
       productsEntity.productDescriptions =  insertProductDescriptions.identifiers[0].id
       productsEntity.specialRules = insertSpecialRules.identifiers[0].id
       const insertProduct = await this.productsRepository.insert(productsEntity)
@@ -105,30 +141,22 @@ export class ProductsService {
         photoProductsEntity.photo = [payload.photo]
       }
       photoProductsEntity.products = insertProduct.identifiers[0].id
-      const insertPhotoProducts = await this.photoProductsRepository.insert(photoProductsEntity)
+      await this.photoProductsRepository.insert(photoProductsEntity)
 
-      return ([
+      return (
         await this.productsRepository.findOneOrFail({
           where: {
             id: insertProduct.identifiers[0].id,
           },
-        }),
-        await this.productDescriptionsRepository.findOneOrFail({
-          where: {
-            id: insertProductDescriptions.identifiers[0].id,
-          },
-        }),
-        await this.specialRulesRepository.findOneOrFail({
-          where: {
-            id: insertSpecialRules.identifiers[0].id,
-          },
-        }),
-        await this.photoProductsRepository.findOneOrFail({
-          where: {
-            id: insertPhotoProducts.identifiers[0].id,
+          relations: {
+            user: true,
+            cities: true,
+            productDescriptions: true,
+            specialRules: true,
+            photoProducts: true,
           },
         })
-       ] )
+      )
     } catch (err) {
       throw err
     }
@@ -283,4 +311,69 @@ export class ProductsService {
       data,
     }
   }
+
+  async recommendProductKos(city: string, page: number = 1, limit: number = 10){
+    const findCity = await this.citiesService.findOneByName(city)
+    const cityId:any = findCity.id
+
+    return await this.productsRepository.findAndCount({
+      where: {
+        type: ProductsType.KOS,
+        cities: {id: cityId}
+      },
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        cities: true
+      }
+    })
+  }
+
+  async recommendProductHotel(city: string, page: number = 1, limit: number = 10){
+    const findCity = await this.citiesService.findOneByName(city)
+    const cityId:any = findCity.id
+
+    return await this.productsRepository.findAndCount({
+      where: {
+        type: ProductsType.HOTEL,
+        cities: {id: cityId}
+      },
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        cities: true
+      }
+    })
+  }
+
+  async recommendProductGedung(city: string, page: number = 1, limit: number = 10){
+    const findCity = await this.citiesService.findOneByName(city)
+    const cityId:any = findCity.id
+
+    return await this.productsRepository.findAndCount({
+      where: {
+        type: ProductsType.GEDUNG,
+        cities: {id: cityId}
+      },
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        cities: true
+      }
+    })
+  }
+
+  // async popularProduct(productId: any) {
+  //   const sorter = 'DESC' // 'ASC' or 'DESC'
+
+  //   const [data, count] = await this.reviewsRepository.findAndCount({
+  //     where: { product: { id: productId } },
+  //     order: {
+  //       rating: `${sorter}`,
+  //     },
+  //     relations: ['product'],
+  //   })
+
+  //   return [data, count]
+  // }
 }

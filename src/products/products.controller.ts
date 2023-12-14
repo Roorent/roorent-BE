@@ -9,11 +9,14 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common'
 import { ProductsService } from './products.service'
 import { HttpStatusCode } from 'axios'
 import { CreateProductsDTO } from './dto/create-products.dto'
 import { UpdateProductsDTO } from './dto/update-products.dto'
+import { AuthGuard } from '@nestjs/passport'
 
 
 @Controller('products')
@@ -22,9 +25,9 @@ export class ProductsController {
     private productsService: ProductsService, // private photoProductsService: PhotoProductsService
   ) {}
 
-  @Get()
-  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.productsService.findAll(page, limit)
+  @Get('all-kos')
+  async getAllKos(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.productsService.findAllKos(page, limit)
 
     return {
       statusCode: HttpStatusCode.Ok,
@@ -34,9 +37,37 @@ export class ProductsController {
     }
   }
 
+  @Get('all-hotel')
+  async getAllHotel(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.productsService.findAllHotel(page, limit)
+
+    return {
+      statusCode: HttpStatusCode.Ok,
+      message: 'success',
+      count,
+      data,
+    }
+  }
+
+  @Get('all-gedung')
+  async getAllGedung(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.productsService.findAllGedung(page, limit)
+
+    return {
+      statusCode: HttpStatusCode.Ok,
+      message: 'success',
+      count,
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  async create(@Body() payload: CreateProductsDTO) {
-    const data = await this.productsService.create(payload)
+  async create(
+    @Req() req,
+    @Body() payload: CreateProductsDTO) {
+    const userId = req.user.id 
+    const data = await this.productsService.create(userId, payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -45,6 +76,64 @@ export class ProductsController {
     }
   }
 
+  @Get('/recommended-kos')
+async getRecommendedKos(
+  @Query('page') page: number, 
+  @Query('limit') limit: number,
+  @Body('city') city: string) {
+    const recommendedProducts = await this.productsService.recommendProductKos(city, page, limit);
+    
+    return {
+        statusCode: HttpStatus.OK,
+        message: 'Success',
+        data: recommendedProducts,
+    };
+}
+
+  @Get('/recommended-hotel')
+async getRecommendedHotel(
+  @Query('page') page: number, 
+  @Query('limit') limit: number,
+  @Body('city') city: string) {
+    const recommendedProducts = await this.productsService.recommendProductHotel(city, page, limit);
+    
+    return {
+        statusCode: HttpStatus.OK,
+        message: 'Success',
+        data: recommendedProducts,
+    };
+}
+
+@Get('/recommended-gedung')
+async getRecommendedGedung(
+  @Query('page') page: number, 
+  @Query('limit') limit: number,
+  @Body('city') city: string) {
+    const recommendedProducts = await this.productsService.recommendProductGedung(city, page, limit);
+    
+    return {
+        statusCode: HttpStatus.OK,
+        message: 'Success',
+        data: recommendedProducts,
+    }
+  }
+  
+
+  // @Get('populer/:id')
+  // async findByProduct(
+  //   @Param('id', ParseUUIDPipe) id: string,
+  // ) {
+  //   const [data, count] = await this.productsService.popularProduct(
+  //     id,
+  //   )
+
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     message: 'Success',
+  //     count,
+  //     data,
+  //   }
+  // }
   
   @Get('/search')
   async listProductsWithSearch(
@@ -64,6 +153,7 @@ export class ProductsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -78,6 +168,7 @@ export class ProductsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     return {
@@ -89,9 +180,9 @@ export class ProductsController {
   @Get('/find-owner/:id')
   async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
     return {
-      data: await this.productsService.listProductsByOwner(id),
       statusCode: HttpStatus.OK,
       message: 'Success',
+      data: await this.productsService.listProductsByOwner(id),
     }
   }
 

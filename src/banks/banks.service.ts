@@ -24,9 +24,9 @@ export class BanksService {
     })
   }
 
-  async create(payload: CreateBanksDTO) {
+  async create(userId: string, payload: CreateBanksDTO) {
     try {
-      const findOneUserId = await this.usersService.findOne(payload.user_id)
+      const findOneUserId = await this.usersService.findOne(userId)
 
       const banksEntity = new Banks()
       banksEntity.bank_name = payload.bank_name

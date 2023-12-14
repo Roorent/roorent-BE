@@ -8,6 +8,7 @@ import { CitiesModule } from '#/cities/cities.module'
 import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
 import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
 import { ProductDescriptions } from '#/product_descriptions/entities/product_descriptions.entity'
+import { Reviews } from '#/reviews/entities/reviews.entity'
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ProductDescriptions } from '#/product_descriptions/entities/product_des
       ProductDescriptions,
       SpecialRules,
       PhotoProducts,
+      Reviews
     ]),
     UsersModule,
     CitiesModule,

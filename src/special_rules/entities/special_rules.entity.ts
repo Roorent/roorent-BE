@@ -33,7 +33,7 @@ export class SpecialRules {
     type: 'varchar',
     length: 255,
   })
-  note: string
+  notes: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

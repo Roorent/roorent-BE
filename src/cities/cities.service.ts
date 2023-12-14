@@ -42,4 +42,26 @@ export class CitiesService {
             }
         }
     }
+
+    async findOneByName(name: string) {
+        try {
+          return await this.citiesRepository.findOneOrFail({
+            where: {
+              name: name,
+            },
+          })
+        } catch (err) {
+          if (err instanceof EntityNotFoundError) {
+            throw new HttpException(
+              {
+                statusCode: HttpStatus.NOT_FOUND,
+                error: 'Data not found',
+              },
+              HttpStatus.NOT_FOUND,
+            )
+          } else {
+            throw err
+          }
+        }
+      }
 }

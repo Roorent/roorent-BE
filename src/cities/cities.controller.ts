@@ -1,9 +1,18 @@
-import { Controller, Get, HttpStatus, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { CitiesService } from './cities.service';
 
 @Controller('cities')
 export class CitiesController {
     constructor(private readonly citiesService: CitiesService){}
+
+    @Get('by-name/:name')
+    async findOneByName(@Param('name') name: string){
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'success',
+            data: await this.citiesService.findOneByName(name)
+        }
+    }
 
     @Get()
     async findAll(@Query('page') page: number, @Query('limit') limit: number){
