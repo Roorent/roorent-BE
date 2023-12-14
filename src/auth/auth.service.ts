@@ -92,6 +92,7 @@ export class AuthService {
     try {
       const userOne = await this.usersRepository.findOne({
         where: { email: payload.email },
+        relations: ['level', 'biodata'],
       })
 
       if (!userOne) {
@@ -118,7 +119,8 @@ export class AuthService {
 
       const datas = {
         id: userOne.id,
-        email: userOne.email,
+        level: userOne.level.name,
+        firstname: userOne.biodata.first_name,
       }
 
       return { access_token: await this.jwtService.sign(datas) }
