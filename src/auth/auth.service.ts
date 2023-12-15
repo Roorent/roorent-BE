@@ -94,36 +94,39 @@ export class AuthService {
         where: { email: payload.email },
         relations: ['level', 'biodata'],
       })
+      if (userOne.biodata.isActive == 'active') {
+        if (!userOne) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.BAD_REQUEST,
+              error: 'Email is invalid',
+            },
+            HttpStatus.BAD_REQUEST,
+          )
+        }
 
-      if (!userOne) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            error: 'Email is invalid',
-          },
-          HttpStatus.BAD_REQUEST,
-        )
+        const isMatch = await bcrypt.compare(payload.password, userOne.password)
+
+        if (!isMatch) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.BAD_REQUEST,
+              error: 'password is invalid',
+            },
+            HttpStatus.BAD_REQUEST,
+          )
+        }
+
+        const datas = {
+          id: userOne.id,
+          role: userOne.level.name,
+          firstname: userOne.biodata.first_name,
+        }
+
+        return { access_token: await this.jwtService.sign(datas) }
+      } else {
+        return 'Akun anda tidak aktif, silahkan hubungi admin'
       }
-
-      const isMatch = await bcrypt.compare(payload.password, userOne.password)
-
-      if (!isMatch) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            error: 'password is invalid',
-          },
-          HttpStatus.BAD_REQUEST,
-        )
-      }
-
-      const datas = {
-        id: userOne.id,
-        role: userOne.level.name,
-        firstname: userOne.biodata.first_name,
-      }
-
-      return { access_token: await this.jwtService.sign(datas) }
     } catch (err) {
       throw err
     }

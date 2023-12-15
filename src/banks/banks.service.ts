@@ -45,6 +45,29 @@ export class BanksService {
     }
   }
 
+  async findOneByUser(id: any) {
+    try {
+      const data = await this.banksRepository.findOneOrFail({
+        where: { user: { id } },
+        relations: ['user'],
+      })
+
+      return data
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } else {
+        throw err
+      }
+    }
+  }
+
   async findOneById(id: string) {
     try {
       return await this.banksRepository.findOneOrFail({

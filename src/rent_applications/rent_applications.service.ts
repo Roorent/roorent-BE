@@ -6,6 +6,7 @@ import { ProductsService } from '#/products/products.service'
 import { UsersService } from '#/users/users.service'
 import { CreateRentApplicationsDTO } from './dto/create-rent_applications.dto'
 import { UpdateRentApplicationsDTO } from './dto/update-rent_applications.dto'
+import { FEE } from '#/constant'
 
 @Injectable()
 export class RentApplicationsService {
@@ -53,28 +54,25 @@ export class RentApplicationsService {
       const findOneUser = await this.userService.findOne(userId)
       const findOneProduct: any = await this.productsService.findOneById(id)
 
-      let rentApp: any = {};
+      let rentApp: any = {}
       if (payload.rental_type === 'harian') {
         rentApp.price = findOneProduct.daily_price
         rentApp.total_price = findOneProduct.daily_price * payload.amount
-      } if (payload.rental_type === 'bulanan') {
+      }
+      if (payload.rental_type === 'bulanan') {
         rentApp.price = findOneProduct.monthly_price
         rentApp.total_price = findOneProduct.monthly_price * payload.amount
       }
 
-      const fee = {
-        kos: 5,
-        gedung: 10,
-        hotel: 10
+      let adminFee: any
+      if (findOneProduct.type === 'Kos') {
+        adminFee = FEE.kos
       }
-
-      let adminFee:  any
-      if(findOneProduct.type === 'Kos'){
-        adminFee = fee.kos
-      } if (findOneProduct.type === 'Hotel'){
-        adminFee = fee.hotel
-      } if (findOneProduct.type === 'Gedung'){
-        adminFee = fee.gedung
+      if (findOneProduct.type === 'Hotel') {
+        adminFee = FEE.hotel
+      }
+      if (findOneProduct.type === 'Gedung') {
+        adminFee = FEE.gedung
       }
 
       const rentApplicationsEntity = new RentApplications()
@@ -138,8 +136,8 @@ export class RentApplicationsService {
       await this.findOneById(id)
       await this.rentApplicationsRepository.softDelete(id)
       return 'success'
-    } catch (e) {
-      throw e
+    } catch (err) {
+      throw err
     }
   }
 }

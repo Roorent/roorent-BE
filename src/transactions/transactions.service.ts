@@ -1,14 +1,19 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PaymentStatus, TransactionType, Transactions } from './entities/transactions.entity';
-import { EntityNotFoundError, Repository } from 'typeorm';
-import { BanksService } from '#/banks/banks.service';
-import { UsersService } from '#/users/users.service';
-import { RentApplicationsService } from '#/rent_applications/rent_applications.service';
-import { CreateTransactionsDTO } from './dto/create-transactions.dto';
-import { UpdateTransactionsDTO } from './dto/update-transactions.dto';
-import { approveRejectDTO } from './dto/approveReject.dto';
-import puppeteer from 'puppeteer';
+import { HttpStatus, Injectable } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import {
+  PaymentStatus,
+  TransactionType,
+  Transactions,
+} from './entities/transactions.entity'
+import { EntityNotFoundError, Repository } from 'typeorm'
+import { BanksService } from '#/banks/banks.service'
+import { UsersService } from '#/users/users.service'
+import { RentApplicationsService } from '#/rent_applications/rent_applications.service'
+import { CreateTransactionsDTO } from './dto/create-transactions.dto'
+import { UpdateTransactionsDTO } from './dto/update-transactions.dto'
+import { approveRejectDTO } from './dto/approveReject.dto'
+import puppeteer from 'puppeteer'
+import { NotificationsService } from '#/notifications/notifications.service'
 
 @Injectable()
 export class TransactionsService {
@@ -18,47 +23,48 @@ export class TransactionsService {
     private bankService: BanksService,
     private userService: UsersService,
     private rentApplicationsService: RentApplicationsService,
-  ){}
+    private notificationService: NotificationsService,
+  ) {}
 
-  findAll(page: number = 1, limit: number = 10){
+  findAll(page: number = 1, limit: number = 10) {
     return this.transactionsRepository.findAndCount({
       skip: --page * limit,
       take: limit,
       relations: {
         user: true,
         banks: true,
-        rentApplications: {product: true},
-      }
+        rentApplications: { product: true },
+      },
     })
   }
 
-  listAllOwner(page: number = 1, limit: number = 10){
+  listAllOwner(page: number = 1, limit: number = 10) {
     return this.transactionsRepository.findAndCount({
       where: {
-      transaction_type: TransactionType.OWNER,
-    },
+        transaction_type: TransactionType.OWNER,
+      },
       skip: --page * limit,
       take: limit,
       relations: {
         user: true,
         banks: true,
-        rentApplications: {product: true},
-      }
+        rentApplications: { product: true },
+      },
     })
   }
 
-  listAllRenter(page: number = 1, limit: number = 10){
+  listAllRenter(page: number = 1, limit: number = 10) {
     return this.transactionsRepository.findAndCount({
       where: {
-      transaction_type: TransactionType.RENTER,
-    },
+        transaction_type: TransactionType.RENTER,
+      },
       skip: --page * limit,
       take: limit,
       relations: {
         user: true,
         banks: true,
-        rentApplications: {product: true},
-      }
+        rentApplications: { product: true },
+      },
     })
   }
 
@@ -100,14 +106,14 @@ export class TransactionsService {
 
   async listTransactionsRenterByOwner(id: string) {
     try {
-      const renter:any = await this.rentApplicationsService.findOneById(id)
+      const renter: any = await this.rentApplicationsService.findOneById(id)
       return await this.transactionsRepository.findOneOrFail({
-        where: { rentApplications: {product: renter.id} },
+        where: { rentApplications: { product: renter.id } },
         relations: {
-        user: true,
-        banks: true,
-        rentApplications: {product: true},
-      }
+          user: true,
+          banks: true,
+          rentApplications: { product: true },
+        },
       })
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
@@ -124,13 +130,14 @@ export class TransactionsService {
   async getDetailRenterById(id: string) {
     try {
       return await this.transactionsRepository.findOneOrFail({
-        where: { 
+        where: {
           transaction_type: TransactionType.RENTER,
-          id },
+          id,
+        },
         relations: {
           user: true,
           banks: true,
-          rentApplications: {product: true},
+          rentApplications: { product: true },
         },
       })
     } catch (err) {
@@ -148,13 +155,14 @@ export class TransactionsService {
   async getDetailOwnerById(id: string) {
     try {
       return await this.transactionsRepository.findOneOrFail({
-        where: { 
+        where: {
           transaction_type: TransactionType.OWNER,
-          id },
+          id,
+        },
         relations: {
           user: true,
           banks: true,
-          rentApplications: {product: true},
+          rentApplications: { product: true },
         },
       })
     } catch (err) {
@@ -176,7 +184,7 @@ export class TransactionsService {
         relations: {
           user: true,
           banks: true,
-          rentApplications: {product: true},
+          rentApplications: { product: true },
         },
       })
     } catch (err) {
@@ -191,40 +199,44 @@ export class TransactionsService {
     }
   }
 
-  async createRenter(id: string, userId: string, payload: CreateTransactionsDTO){
+  async createRenter(
+    id: string,
+    userId: string,
+    payload: CreateTransactionsDTO,
+  ) {
     try {
       const findOneUserId = await this.userService.findOne(userId)
-      const findOneBankId = await this.bankService.findOneById(payload.bank_id)
-      const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(id)
+      const [users, count] = await this.userService.findAll()
+      const userAdmin = users.filter((user) => user.level.name === 'admin')
 
-      // const user = await this.userService.findOne(findOneBankId.user.id)
+      const findOneRentApplicationsId: any =
+        await this.rentApplicationsService.findOneById(id)
+      const findOneBankId = await this.bankService.findOneByUser(
+        userAdmin[0].id,
+      )
 
-      // let userAdmin:any
-      // if (user.level.name == 'admin') {
-      //   userAdmin = user.level.id
-      // }
+      const expiredTime = Date.now() + 60 * 60 * 1000 * 3
 
-      // return user
-
-     
       const transactionsEntity = new Transactions()
-      transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
+      transactionsEntity.expired_payment = expiredTime.toString()
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.RENTER
       transactionsEntity.user = findOneUserId
       transactionsEntity.banks = findOneBankId
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
-      const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
+      const insertRentApplications = await this.transactionsRepository.insert(
+        transactionsEntity,
+      )
 
       return await this.transactionsRepository.findOneOrFail({
         where: {
-          id: insertRentApplications.identifiers[0].id
+          id: insertRentApplications.identifiers[0].id,
         },
         relations: {
           user: true,
           banks: true,
-          rentApplications: {product: true},
+          rentApplications: { product: true },
         },
       })
     } catch (err) {
@@ -232,17 +244,24 @@ export class TransactionsService {
     }
   }
 
-  async createOwner(id: string, payload: CreateTransactionsDTO){
+  async createOwner(id: string, payload: CreateTransactionsDTO) {
     try {
       const findOneUserId = await this.userService.findOne(id)
       const findOneBankId = await this.bankService.findOneById(payload.bank_id)
-      const findOneRentApplicationsId:any = await this.rentApplicationsService.findOneById(payload.rent_application_id)
+      const findOneRentApplicationsId: any =
+        await this.rentApplicationsService.findOneById(
+          payload.rent_application_id,
+        )
 
-      const totalfee = findOneRentApplicationsId.total_price * (findOneRentApplicationsId.fee / 100)
+      const totalfee =
+        findOneRentApplicationsId.total_price *
+        (findOneRentApplicationsId.fee / 100)
       const totalPrice = findOneRentApplicationsId.total_price - totalfee
 
+      const expiredTime = Date.now() + 60 * 60 * 1000 * 3
+
       const transactionsEntity = new Transactions()
-      transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
+      transactionsEntity.expired_payment = expiredTime.toString()
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.OWNER
       transactionsEntity.payment_status = PaymentStatus.APPROVE
@@ -251,16 +270,18 @@ export class TransactionsService {
       transactionsEntity.totalPrice = totalPrice
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
-      const insertRentApplications = await this.transactionsRepository.insert(transactionsEntity)
+      const insertRentApplications = await this.transactionsRepository.insert(
+        transactionsEntity,
+      )
 
       return await this.transactionsRepository.findOneOrFail({
         where: {
-          id: insertRentApplications.identifiers[0].id
+          id: insertRentApplications.identifiers[0].id,
         },
         relations: {
           user: true,
           banks: true,
-          rentApplications: {product: true},
+          rentApplications: { product: true },
         },
       })
     } catch (err) {
@@ -268,19 +289,20 @@ export class TransactionsService {
     }
   }
 
-  async update(id: string, payload: UpdateTransactionsDTO){
+  async update(id: string, payload: UpdateTransactionsDTO) {
     await this.findOneById(id)
 
-    
+    const expiredTime = Date.now() + 60 * 60 * 1000 * 3
+
     const transactionsEntity = new Transactions()
-    transactionsEntity.transaction_deadline = new Date(payload.transaction_deadline)
+    transactionsEntity.expired_payment = expiredTime.toString()
     transactionsEntity.transaction_proof = payload.transaction_proof
 
     await this.transactionsRepository.update(id, transactionsEntity)
 
-      return await this.transactionsRepository.findOneOrFail({
-        where: {id}
-      })
+    return await this.transactionsRepository.findOneOrFail({
+      where: { id },
+    })
   }
 
   async softDeleteById(id: string) {
@@ -288,80 +310,81 @@ export class TransactionsService {
       await this.findOneById(id)
       await this.transactionsRepository.softDelete(id)
       return 'success'
-    } catch (e) {
-      throw e
-    }
-  }
-
-  async approveTransactions(id: string, payload: approveRejectDTO) {
-    try {
-      await this.findOneById(id)
-  
-      const transactionsEntity = new Transactions()
-      transactionsEntity.payment_status = payload.payment_status
-  
-      await this.transactionsRepository.update(id, transactionsEntity)
-      return await this.transactionsRepository.findOneOrFail({
-        where: {id},
-        relations: {
-          user: true,
-          banks: true,
-          rentApplications: true,
-        },
-      })
-      
     } catch (err) {
       throw err
     }
   }
 
-  async rejectTransactions(id: string, payload: approveRejectDTO) {
+  async appTransactions(id: string, payload: approveRejectDTO) {
     try {
       await this.findOneById(id)
-
       const transactionsEntity = new Transactions()
-      transactionsEntity.payment_status = payload.payment_status
+      transactionsEntity.payment_status = payload.status
       transactionsEntity.reason = payload.reason
-
       await this.transactionsRepository.update(id, transactionsEntity)
+
+      const transData = await this.transactionsRepository.findOneOrFail({
+        where: { id },
+        relations: {
+          rentApplications: { product: { user: true }, user: true },
+        },
+      })
+
+      const senderId = transData.rentApplications.product.user.id
+      const receiverId = transData.rentApplications.user.id
+
+      if (payload.status === 'approve') {
+        const data = {
+          title: 'Approved',
+          content: `Selamat aplikasi anda disetujui!`,
+        }
+        await this.notificationService.create(data, senderId, receiverId)
+      }
+      if (payload.status === 'reject') {
+        const data = {
+          title: 'Rejected',
+          content: `Mohon maaf aplikasi anda telah ditolak!`,
+        }
+        await this.notificationService.create(data, senderId, receiverId)
+      }
+
       return await this.transactionsRepository.findOneOrFail({
-        where: {id},
+        where: { id },
         relations: {
           user: true,
           banks: true,
           rentApplications: true,
         },
       })
-
     } catch (err) {
       throw err
     }
   }
 
-  async findByStatus(status: string){
-    let statusPayment: any;
+  async findByStatus(status: string) {
+    let statusPayment: any
 
     if (status === 'approve') {
-      statusPayment = PaymentStatus.APPROVE;
+      statusPayment = PaymentStatus.APPROVE
     } else if (status === 'reject') {
-      statusPayment = PaymentStatus.REJECT;
+      statusPayment = PaymentStatus.REJECT
     } else if (status === 'pending') {
-      statusPayment = PaymentStatus.PENDING;
+      statusPayment = PaymentStatus.PENDING
     }
 
     try {
       const result = await this.transactionsRepository.find({
         where: { payment_status: statusPayment },
-      });
-      return result;
-    } catch (error) {
-      throw error;
+      })
+      return result
+    } catch (err) {
+      throw err
     }
   }
 
-  async generatepdfTransaction(){
+  async generatepdfTransaction() {
     const browser = await puppeteer.launch({
-      args: ['--allow-file-access-from-files']
+      args: ['--allow-file-access-from-files'],
     })
 
     const page = await browser.newPage()
@@ -378,15 +401,16 @@ export class TransactionsService {
             <th>First Name</th>
             <th>Last Name</th>
           </tr>
-          ${
-            allTransactions.map((transactions) => 
-              `<tr>
+          ${allTransactions
+            .map(
+              (transactions) =>
+                `<tr>
                 <td>${transactions.id}</td>
                 <td>${transactions.transaction_type}</td>
                 <td>${transactions.rentApplications}</td>
               </tr>`,
-            ).join('')
-          }
+            )
+            .join('')}
         </table>
       </body>
       </html>
@@ -397,6 +421,6 @@ export class TransactionsService {
     const pdfBuffer = await page.pdf({})
 
     browser.close()
-    return pdfBuffer;
+    return pdfBuffer
   }
 }

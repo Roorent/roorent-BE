@@ -27,8 +27,8 @@ export class Chats {
   })
   readable: boolean
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  timestamp: Date
+  @Column({ type: 'bigint', nullable: true })
+  timestamp: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

@@ -35,6 +35,7 @@ export class ChatsService {
     try {
       const receiver = await this.usersService.findOne(receiverId)
       const sender = await this.usersService.findOne(senderId)
+      const timer = Date.now()
 
       if (!sender || !receiver) {
         throw new Error('Sender or receiver not found')
@@ -44,6 +45,7 @@ export class ChatsService {
       chatEntity.message = message
       chatEntity.sender = sender
       chatEntity.receiver = receiver
+      chatEntity.timestamp = timer.toString()
 
       const insertChats = await this.chatRepository.insert(chatEntity)
 
