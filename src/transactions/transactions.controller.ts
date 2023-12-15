@@ -88,10 +88,11 @@ export class TransactionsController {
     @Headers() headers: any,
   ) {
     const pdfBuffer = await this.transactionService.generatepdfTransaction()
+    const fileName = Date.now()
 
     //set header to response
     headers['content-type'] = 'application/pdf'
-    headers['content-disposition'] = 'inline; filename=example.pdf'
+    headers['content-disposition'] = `inline; filename=${fileName}.pdf`
 
     res.end(pdfBuffer, 'binary')
   }
@@ -221,26 +222,12 @@ export class TransactionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Put('approve/:id')
-  async approve(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('status') status: string,
-  ) {
-    const data = await this.transactionService.approveTransactions(id, status)
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'success',
-      data,
-    }
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Put('reject/:id')
-  async reject(
+  @Put('applications/:id')
+  async appTransactions(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: approveRejectDTO,
   ) {
-    const data = await this.transactionService.rejectTransactions(id, payload)
+    const data = await this.transactionService.appTransactions(id, payload)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',

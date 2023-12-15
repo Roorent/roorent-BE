@@ -6,6 +6,7 @@ import { ProductsService } from '#/products/products.service'
 import { UsersService } from '#/users/users.service'
 import { CreateRentApplicationsDTO } from './dto/create-rent_applications.dto'
 import { UpdateRentApplicationsDTO } from './dto/update-rent_applications.dto'
+import { FEE } from '#/constant'
 
 @Injectable()
 export class RentApplicationsService {
@@ -63,21 +64,15 @@ export class RentApplicationsService {
         rentApp.total_price = findOneProduct.monthly_price * payload.amount
       }
 
-      const fee = {
-        kos: 5,
-        gedung: 10,
-        hotel: 10,
-      }
-
       let adminFee: any
       if (findOneProduct.type === 'Kos') {
-        adminFee = fee.kos
+        adminFee = FEE.kos
       }
       if (findOneProduct.type === 'Hotel') {
-        adminFee = fee.hotel
+        adminFee = FEE.hotel
       }
       if (findOneProduct.type === 'Gedung') {
-        adminFee = fee.gedung
+        adminFee = FEE.gedung
       }
 
       const rentApplicationsEntity = new RentApplications()

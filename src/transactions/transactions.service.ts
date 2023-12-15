@@ -315,43 +315,7 @@ export class TransactionsService {
     }
   }
 
-  async approveTransactions(id: string, payment_status: any) {
-    try {
-      await this.findOneById(id)
-      await this.transactionsRepository.update(id, { payment_status })
-
-      const transData = await this.transactionsRepository.findOneOrFail({
-        where: { id },
-        relations: {
-          rentApplications: { product: { user: true }, user: true },
-        },
-      })
-
-      const senderId = transData.rentApplications.product.user.id
-      const receiverId = transData.rentApplications.user.id
-
-      if (payment_status === 'approve') {
-        const data = {
-          title: 'Approved',
-          content: `Selamat aplikasi anda disetujui!`,
-        }
-        await this.notificationService.create(data, senderId, receiverId)
-      }
-
-      return await this.transactionsRepository.findOneOrFail({
-        where: { id },
-        relations: {
-          user: true,
-          banks: true,
-          rentApplications: true,
-        },
-      })
-    } catch (err) {
-      throw err
-    }
-  }
-
-  async rejectTransactions(id: string, payload: approveRejectDTO) {
+  async appTransactions(id: string, payload: approveRejectDTO) {
     try {
       await this.findOneById(id)
       const transactionsEntity = new Transactions()
@@ -369,6 +333,13 @@ export class TransactionsService {
       const senderId = transData.rentApplications.product.user.id
       const receiverId = transData.rentApplications.user.id
 
+      if (payload.status === 'approve') {
+        const data = {
+          title: 'Approved',
+          content: `Selamat aplikasi anda disetujui!`,
+        }
+        await this.notificationService.create(data, senderId, receiverId)
+      }
       if (payload.status === 'reject') {
         const data = {
           title: 'Rejected',
