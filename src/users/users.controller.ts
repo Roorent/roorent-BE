@@ -57,9 +57,8 @@ export class UsersController {
   @Put('/nonactive/:id')
   async getNonactive(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('isActive') isActive: string,
   ) {
-    const data = await this.usersService.getNonactive(id, isActive)
+    const data = await this.usersService.getNonactive(id)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
@@ -119,9 +118,8 @@ export class UsersController {
   @Put('approve/:id')
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('isActive') isActive: string,
   ) {
-    const data = await this.usersService.approveOwner(id, isActive)
+    const data = await this.usersService.approveOwner(id)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
@@ -133,10 +131,9 @@ export class UsersController {
   @Put('reject/:id')
   async reject(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('isActive') isActive: string,
     @Body('reason') reason: string,
   ) {
-    const data = await this.usersService.rejectOwner(id, isActive, reason)
+    const data = await this.usersService.rejectOwner(id, reason)
     return {
       statusCode: HttpStatus.OK,
       message: 'success',

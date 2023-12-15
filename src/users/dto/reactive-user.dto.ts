@@ -13,10 +13,4 @@ export class ReactiveUserDto {
 
   @IsNotEmpty()
   last_name: string;
-
-  @IsNotEmpty()
-  photo_ktp: string;
-
-  @IsNotEmpty()
-  isActive: StatusUsers;
 }

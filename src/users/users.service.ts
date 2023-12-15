@@ -8,7 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { EntityNotFoundError, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Biodatas } from '#/biodatas/entities/biodatas.entity'
+import { Biodatas, StatusUsers } from '#/biodatas/entities/biodatas.entity'
 import { ReactiveUserDto } from './dto/reactive-user.dto'
 import * as bcrypt from 'bcrypt'
 
@@ -165,7 +165,8 @@ export class UsersService {
     await this.usersRepository.softDelete(id)
   }
 
-  async getNonactive(id: string, active: any) {
+  async getNonactive(id: string
+    ) {
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
@@ -184,7 +185,7 @@ export class UsersService {
 
       const biodataId = user.biodata.id
       const biodatasEntity = new Biodatas()
-      biodatasEntity.isActive = active
+      biodatasEntity.isActive = StatusUsers.INACTIVE
 
       await this.biodatasRepository.update(biodataId, biodatasEntity)
 
@@ -213,23 +214,46 @@ export class UsersService {
         )
       }
 
-      const saltGenerate = await bcrypt.genSalt()
-      const hash = await bcrypt.hash(payload.password, saltGenerate)
+      if (!user) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'Email is invalid',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
+      }
 
+      const isMatch = await bcrypt.compare(payload.password, user.password)
+
+      if (!isMatch) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'password is invalid',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+
+      const existingUser:any = await this.usersRepository.findOne({ 
+        where: {biodata: {first_name: payload.first_name, last_name: payload.last_name}} 
+      });
+
+    if (existingUser) {
       const biodataId = user.biodata.id
       const biodatasEntity = new Biodatas()
-      biodatasEntity.first_name = payload.first_name
-      biodatasEntity.last_name = payload.last_name
-      biodatasEntity.photo_ktp = payload.photo_ktp
-      biodatasEntity.isActive = payload.isActive
-
-      const usersEntity = new Users()
-      usersEntity.email = payload.email
-      usersEntity.salt = saltGenerate
-      usersEntity.password = hash
-
+      biodatasEntity.isActive = StatusUsers.ACTIVE
       await this.biodatasRepository.update(biodataId, biodatasEntity)
-      await this.usersRepository.update(id, usersEntity)
+    } else {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: 'first name and last name is invalid',
+        },
+        HttpStatus.BAD_REQUEST,
+      )
+    }
 
       return await this.biodatasRepository.findOneOrFail({
         where: { user: { id } },
@@ -239,7 +263,39 @@ export class UsersService {
     }
   }
 
-  async approveOwner(id: string, active: any) {
+  async approveOwner(id: string) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        relations: ['biodata'],
+        where: { id },
+      })
+
+      // if (user.biodata.isActive !== 'pending') {
+      //   throw new HttpException(
+      //     {
+      //       statusCode: HttpStatus.NOT_FOUND,
+      //       error: 'Data not found',
+      //     },
+      //     HttpStatus.NOT_FOUND,
+      //   )
+      // }
+
+      const biodataId = user.biodata.id
+      const biodatasEntity = new Biodatas()
+      biodatasEntity.isActive = StatusUsers.ACTIVE
+      biodatasEntity.reason = null
+
+      await this.biodatasRepository.update(biodataId, biodatasEntity)
+
+      return await this.biodatasRepository.findOneOrFail({
+        where: { user: { id } },
+      })
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async rejectOwner(id: string, reason: any){
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
@@ -258,38 +314,7 @@ export class UsersService {
 
       const biodataId = user.biodata.id
       const biodatasEntity = new Biodatas()
-      biodatasEntity.isActive = active
-
-      await this.biodatasRepository.update(biodataId, biodatasEntity)
-
-      return await this.biodatasRepository.findOneOrFail({
-        where: { user: { id } },
-      })
-    } catch (err) {
-      throw err
-    }
-  }
-
-  async rejectOwner(id: string, active: any, reason: any){
-    try {
-      const user = await this.usersRepository.findOneOrFail({
-        relations: ['biodata'],
-        where: { id },
-      })
-
-      if (user.biodata.isActive !== 'pending') {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            error: 'Data not found',
-          },
-          HttpStatus.NOT_FOUND,
-        )
-      }
-
-      const biodataId = user.biodata.id
-      const biodatasEntity = new Biodatas()
-      biodatasEntity.isActive = active
+      biodatasEntity.isActive = StatusUsers.REJECT
       biodatasEntity.reason = reason
 
       await this.biodatasRepository.update(biodataId, biodatasEntity)

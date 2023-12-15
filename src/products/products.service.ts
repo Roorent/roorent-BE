@@ -30,7 +30,10 @@ export class ProductsService {
 
   findAllKos(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
-      where: {type: ProductsType.KOS},
+      where: {
+        type: ProductsType.KOS,
+        active_status: true
+      },
       skip: --page * limit,
       take: limit,
       relations: {
@@ -45,7 +48,10 @@ export class ProductsService {
 
   findAllHotel(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
-      where: {type: ProductsType.HOTEL},
+      where: {
+        type: ProductsType.HOTEL,
+        active_status: true
+      },
       skip: --page * limit,
       take: limit,
       relations: {
@@ -60,7 +66,10 @@ export class ProductsService {
 
   findAllGedung(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
-      where: {type: ProductsType.GEDUNG},
+      where: {
+        type: ProductsType.GEDUNG,
+        active_status: true
+      },
       skip: --page * limit,
       take: limit,
       relations: {
@@ -319,6 +328,7 @@ export class ProductsService {
     return await this.productsRepository.findAndCount({
       where: {
         type: ProductsType.KOS,
+        active_status: true,
         cities: {id: cityId}
       },
       skip: --page * limit,
@@ -336,6 +346,7 @@ export class ProductsService {
     return await this.productsRepository.findAndCount({
       where: {
         type: ProductsType.HOTEL,
+        active_status: true,
         cities: {id: cityId}
       },
       skip: --page * limit,
@@ -353,6 +364,7 @@ export class ProductsService {
     return await this.productsRepository.findAndCount({
       where: {
         type: ProductsType.GEDUNG,
+        active_status: true,
         cities: {id: cityId}
       },
       skip: --page * limit,
