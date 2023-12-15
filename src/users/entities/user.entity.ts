@@ -27,7 +27,10 @@ export class Users {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column({ nullable: false })
+  @Column({ 
+    nullable: false,
+    unique: true
+  })
   email: string
 
   @Column({ nullable: false })

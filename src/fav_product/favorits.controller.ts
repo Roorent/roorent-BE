@@ -1,41 +1,54 @@
-import { Controller, Get, HttpStatus, Query, Body, Post, Delete, Param, ParseUUIDPipe } from '@nestjs/common';
-import { FavoritsService } from './favorits.service';
-import { CreateFavoritDTO } from './dto/create-favorits.dto';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  Post,
+  Delete,
+  Param,
+  ParseUUIDPipe,
+  UseGuards,
+  Req,
+} from '@nestjs/common'
+import { FavoritsService } from './favorits.service'
+import { AuthGuard } from '@nestjs/passport'
 
-@Controller('favorit')
+@Controller('favorite')
 export class FavoritsController {
-    constructor(private favoritService: FavoritsService){}
+  constructor(private favoritService: FavoritsService) {}
 
-    @Get()
-    async findAll(@Query('page')page: number, @Query('limit') limit: number){
-        const [data, count] = await this.favoritService.findAll(page,limit)
-        return {
-            statusCode: HttpStatus.OK,
-            message: 'Success',
-            count,
-            data
-        }
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  async findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.favoritService.findAll(page, limit)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
     }
+  }
 
-    @Post()
-    async create(@Body() payload: CreateFavoritDTO){
-        const datas = await this.favoritService.create(payload)
-        return{
-            statusCode: HttpStatus.CREATED,
-            message: 'Succes',
-            data: datas
-        }
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id')
+  async create(@Req() req, @Param('id', ParseUUIDPipe) id: string) {
+    const userId = req.user.id
+    const datas = await this.favoritService.create(id, userId)
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Succes',
+      data: datas,
     }
+  }
 
-    @Delete(':id')
-    async remove(@Param('id', ParseUUIDPipe) id: string){
-        const datas = await this.favoritService.remove(id)
-        return{
-            statusCode: HttpStatus.OK,
-            message: 'Succes',
-            data: datas
-        }
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    const datas = await this.favoritService.remove(id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Succes',
+      data: datas,
     }
-
-   
+  }
 }
