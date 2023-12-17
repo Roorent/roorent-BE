@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
 import { GenderProduct } from '../entities/special_rules.entity';
 
-export class CreateSpecialRulesDto {
+export class CreateSpecialRulesDTO {
   @IsNotEmpty()
   @IsNumber()
   max_person: number;
@@ -11,5 +11,5 @@ export class CreateSpecialRulesDto {
   gender: GenderProduct;
 
   @IsNotEmpty()
-  general: string;
+  Note: string;
 }

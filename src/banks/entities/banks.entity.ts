@@ -1,3 +1,4 @@
+import { Transactions } from '#/transactions/entities/transactions.entity'
 import { Users } from '#/users/entities/user.entity'
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -56,4 +58,7 @@ export class Banks {
 
   @ManyToOne(() => Users, (user) => user.banks)
   user: Users
+
+  @OneToMany(() => Transactions, (transaction) => transaction.banks)
+  transactions: Transactions
 }

@@ -6,6 +6,6 @@ import { Cities } from '#/cities/entities/cities.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Levels, Cities])],
-  // providers: [SeederService],
+  providers: [SeederService],
 })
 export class SeederModule {}

@@ -1,8 +1,12 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { PhotoReviewsService } from './photo_reviews.service';
 import { HttpStatusCode } from 'axios';
 import { UpdatePhotoReviewsDTO } from './dto/update-photo_reviews.dto';
 import { CreatePhotoReviewsDTO } from './dto/create-photo_reviews.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storagePhotoReviews } from './helpers/upload-photo-reviews';
+import { of } from 'rxjs';
+import { join } from 'path';
 
 @Controller('photo-reviews')
 export class PhotoReviewsController {
@@ -11,8 +15,8 @@ export class PhotoReviewsController {
   ){}
 
   @Get()
-  async getAllPhotoReviews() {
-    const [data, count] = await this.photoReviewsService.findAll()
+  async getAllPhotoReviews(@Query('page') page: number, @Query('limit') limit: number){
+    const [data, count] = await this.photoReviewsService.findAll(page, limit);
 
     return {
       statusCode: HttpStatusCode.Ok,
@@ -32,8 +36,8 @@ export class PhotoReviewsController {
   }
 
   @Post()
-  async create(@Body() createPhotoReviewsDTO: CreatePhotoReviewsDTO) {
-    const data = await this.photoReviewsService.create(createPhotoReviewsDTO)
+  async create(@Body() payload: CreatePhotoReviewsDTO) {
+    const data = await this.photoReviewsService.create(payload)
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -45,11 +49,11 @@ export class PhotoReviewsController {
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updatePhotoReviewsDTO: UpdatePhotoReviewsDTO,
+    @Body() payload: UpdatePhotoReviewsDTO,
   ) {
     const data = await this.photoReviewsService.update(
       id,
-      updatePhotoReviewsDTO,
+      payload,
     )
 
     return {
@@ -65,5 +69,27 @@ export class PhotoReviewsController {
       statusCode: HttpStatus.OK,
       message: await this.photoReviewsService.softDeleteById(id),
     }
+  }
+
+  @Post('upload-photo-reviews')
+  @UseInterceptors(FileInterceptor('photo-reviews', storagePhotoReviews))
+  uploadPhotoReviews(@UploadedFile() photoReviews: Express.Multer.File){
+    if(typeof photoReviews?.filename == "undefined"){
+      return {
+        statusCode: HttpStatus.BAD_REQUEST, 
+        message: "error upload file"
+      }
+     }
+  
+     return {
+        filename: photoReviews?.filename
+     }
+  }
+
+  @Get('/:type/:filename')
+  getProfileImage(@Param('type') type: string,@Param('filename') filename: string, @Res() res: any){
+    return of(
+      res.sendFile(join(process.cwd(), `upload/${type}/${filename}`))
+    )
   }
 }

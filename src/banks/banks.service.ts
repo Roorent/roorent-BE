@@ -11,27 +11,27 @@ export class BanksService {
   constructor(
     @InjectRepository(Banks)
     private banksRepository: Repository<Banks>,
-    private usersRepository: UsersService,
+    private usersService: UsersService,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1, limit: number = 10) {
     return this.banksRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
       relations: {
         user: true,
       },
     })
   }
 
-  async create(createBanksDTO: CreateBanksDTO) {
+  async create(userId: string, payload: CreateBanksDTO) {
     try {
-      const findOneUserId = await this.usersRepository.findOne(
-        createBanksDTO.user_id,
-      )
+      const findOneUserId = await this.usersService.findOne(userId)
 
       const banksEntity = new Banks()
-      banksEntity.bank_name = createBanksDTO.bank_name
-      banksEntity.acc_name = createBanksDTO.acc_name
-      banksEntity.acc_number = createBanksDTO.acc_number
+      banksEntity.bank_name = payload.bank_name
+      banksEntity.acc_name = payload.acc_name
+      banksEntity.acc_number = payload.acc_number
       banksEntity.user = findOneUserId
 
       const insertBanks = await this.banksRepository.insert(banksEntity)
@@ -42,6 +42,29 @@ export class BanksService {
       })
     } catch (err) {
       throw err
+    }
+  }
+
+  async findOneByUser(id: any) {
+    try {
+      const data = await this.banksRepository.findOneOrFail({
+        where: { user: { id } },
+        relations: ['user'],
+      })
+
+      return data
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } else {
+        throw err
+      }
     }
   }
 
@@ -56,7 +79,7 @@ export class BanksService {
         throw new HttpException(
           {
             statusCode: HttpStatus.NOT_FOUND,
-            error: 'data not found',
+            error: 'Data not found',
           },
           HttpStatus.NOT_FOUND,
         )
@@ -66,14 +89,14 @@ export class BanksService {
     }
   }
 
-  async update(id: string, updateBanksDTO: UpdateBanksDTO) {
+  async update(id: string, payload: UpdateBanksDTO) {
     try {
       await this.findOneById(id)
 
       const banksEntity = new Banks()
-      banksEntity.bank_name = updateBanksDTO.bank_name
-      banksEntity.acc_name = updateBanksDTO.acc_name
-      banksEntity.acc_number = updateBanksDTO.acc_number
+      banksEntity.bank_name = payload.bank_name
+      banksEntity.acc_name = payload.acc_name
+      banksEntity.acc_number = payload.acc_number
 
       await this.banksRepository.update(id, banksEntity)
 
@@ -93,7 +116,7 @@ export class BanksService {
 
       await this.banksRepository.softDelete(id)
 
-      return 'success'
+      return 'Success'
     } catch (err) {
       throw err
     }

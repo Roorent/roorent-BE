@@ -11,11 +11,13 @@ export class PhotoProductsService {
   constructor(
     @InjectRepository(PhotoProducts)
     private photoProductsRepository: Repository<PhotoProducts>,
-    private productsRepository: ProductsService,
+    private productsService: ProductsService,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1, limit: number = 10) {
     return this.photoProductsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
       relations: {
         products: true,
       },
@@ -28,59 +30,61 @@ export class PhotoProductsService {
         where: { id },
         relations: { products: true },
       })
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
         throw new HttpException(
           {
             statusCode: HttpStatus.NOT_FOUND,
-            error: 'data not found',
+            error: 'Data not found',
           },
           HttpStatus.NOT_FOUND,
         )
       } else {
-        throw e
+        throw err
       }
     }
   }
 
-  async create(createPhotoProductsDTO: CreatePhotoProductsDTO) {
-   try {
-    const findOneProductId: any = await this.productsRepository.findOneById(
-      createPhotoProductsDTO.product_id
-    )
+  async create(payload: CreatePhotoProductsDTO) {
+    try {
+      const findOneProductId: any = await this.productsService.findOneById(
+        payload.product_id,
+      )
 
-    const photoProductsEntity = new PhotoProducts()
-    if (Array.isArray(createPhotoProductsDTO.photo)) {
-      photoProductsEntity.photo = createPhotoProductsDTO.photo;
-    } else {
-      photoProductsEntity.photo = [createPhotoProductsDTO.photo];
+      const photoProductsEntity = new PhotoProducts()
+      if (Array.isArray(payload.photo)) {
+        photoProductsEntity.photo = payload.photo
+      } else {
+        photoProductsEntity.photo = [payload.photo]
+      }
+
+      // photoProductsEntity.photo = payload.photo
+      photoProductsEntity.products = findOneProductId
+
+      const insertPhotoProducts = await this.photoProductsRepository.insert(
+        photoProductsEntity,
+      )
+      return await this.photoProductsRepository.findOneOrFail({
+        where: {
+          id: insertPhotoProducts.identifiers[0].id,
+        },
+      })
+    } catch (err) {
+      throw err
     }
-    
-    // photoProductsEntity.photo = createPhotoProductsDTO.photo
-    photoProductsEntity.products = findOneProductId
-
-    const insertPhotoProducts = await this.photoProductsRepository.insert(photoProductsEntity)
-    return await this.photoProductsRepository.findOneOrFail({
-      where: {
-        id: insertPhotoProducts.identifiers[0].id,
-      },
-    })
-   } catch (e) {
-    throw e
-   }
   }
 
-  async update(id: string, updatePhotoProductsDTO: UpdatePhotoProductsDTO) {
+  async update(id: string, payload: UpdatePhotoProductsDTO) {
     try {
       await this.findOneById(id)
 
       const photoProductsEntity = new PhotoProducts()
-      if (Array.isArray(updatePhotoProductsDTO.photo)) {
-        photoProductsEntity.photo = updatePhotoProductsDTO.photo;
+      if (Array.isArray(payload.photo)) {
+        photoProductsEntity.photo = payload.photo
       } else {
-        photoProductsEntity.photo = [updatePhotoProductsDTO.photo];
+        photoProductsEntity.photo = [payload.photo]
       }
-      // photoProductsEntity.photo = updatePhotoProductsDTO.photo
+      // photoProductsEntity.photo = payload.photo
 
       await this.photoProductsRepository.update(id, photoProductsEntity)
 
@@ -89,8 +93,8 @@ export class PhotoProductsService {
           id,
         },
       })
-    } catch (e) {
-      throw e
+    } catch (err) {
+      throw err
     }
   }
 
@@ -100,9 +104,9 @@ export class PhotoProductsService {
 
       await this.photoProductsRepository.softDelete(id)
 
-      return 'success'
-    } catch (e) {
-      throw e
+      return 'Success'
+    } catch (err) {
+      throw err
     }
   }
 }

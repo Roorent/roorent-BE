@@ -2,7 +2,7 @@ import { Injectable, HttpStatus, HttpException } from '@nestjs/common'
 import { SpecialRules } from './entities/special_rules.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { EntityNotFoundError, Repository } from 'typeorm'
-import { CreateSpecialRulesDto } from './dto/create-specialRules.dto'
+import { CreateSpecialRulesDTO } from './dto/create-specialRules.dto'
 import { UpdateSpecialRulesDto } from './dto/update-specialRules.dto'
 
 @Injectable()
@@ -12,11 +12,14 @@ export class SpecialRulesService {
     private specialRulesRepository: Repository<SpecialRules>,
   ) {}
 
-  findAll() {
-    return this.specialRulesRepository.findAndCount()
+  findAll(page: number = 1 , limit: number = 10) {
+    return this.specialRulesRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+    })
   }
 
-  async create(payload: CreateSpecialRulesDto) {
+  async create(payload: CreateSpecialRulesDTO) {
     const result = await this.specialRulesRepository.insert(payload)
     return this.specialRulesRepository.findOneOrFail({
       where: {

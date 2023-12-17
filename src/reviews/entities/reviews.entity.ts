@@ -1,12 +1,16 @@
 import { PhotoReviews } from '#/photo_reviews/entities/photo_reviews.entity'
+import { Products } from '#/products/enitities/products.entity'
+import { Transactions } from '#/transactions/entities/transactions.entity'
 import { Users } from '#/users/entities/user.entity'
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -49,6 +53,13 @@ export class Reviews {
   @ManyToOne(() => Users, (user) => user.reviews)
   user: Users
 
+  @ManyToOne(() => Products, (product) => product.reviews)
+  product: Products
+
   @OneToMany(() => PhotoReviews, (photoReviews) => photoReviews.reviews)
   photoReviews: PhotoReviews
+
+  @OneToOne(() => Transactions)
+  @JoinColumn()
+  transactions: Transactions
 }

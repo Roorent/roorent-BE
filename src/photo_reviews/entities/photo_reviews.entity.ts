@@ -6,7 +6,6 @@ export class PhotoReviews{
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
   @Column({
     type: 'varchar',
     array: true,

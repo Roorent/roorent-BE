@@ -9,10 +9,12 @@ import {
   HttpStatus,
   Query,
   UseGuards,
+  Patch,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { AuthGuard } from '@nestjs/passport'
+import { ReactiveUserDto } from './dto/reactive-user.dto'
 
 @Controller('users')
 export class UsersController {
@@ -52,6 +54,33 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Put('/nonactive/:id')
+  async getNonactive(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const data = await this.usersService.getNonactive(id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/reactive/:id')
+  async getReactive(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: ReactiveUserDto,
+  ) {
+    const data = await this.usersService.getReactive(id, payload)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {
@@ -82,6 +111,33 @@ export class UsersController {
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('approve/:id')
+  async approve(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const data = await this.usersService.approveOwner(id)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('reject/:id')
+  async reject(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('reason') reason: string,
+  ) {
+    const data = await this.usersService.rejectOwner(id, reason)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
     }
   }
 }
