@@ -3,7 +3,6 @@ import { GenderProduct } from '#/special_rules/entities/special_rules.entity'
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber } from 'class-validator'
 
 export class CreateProductsDTO {
-
   @IsNotEmpty()
   city: string
 
@@ -54,5 +53,4 @@ export class CreateProductsDTO {
 
   @IsNotEmpty()
   notes: string
-
 }
