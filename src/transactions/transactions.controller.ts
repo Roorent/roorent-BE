@@ -238,30 +238,38 @@ export class TransactionsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/list-renter/:id')
   async getTransactionsByRenter(@Param('id', ParseUUIDPipe) id: string) {
+    const data = await this.transactionService.listTransactionsByRenter(id)
+
     return {
-      data: await this.transactionService.listTransactionsByRenter(id),
       statusCode: HttpStatus.OK,
       message: 'Success',
+      data,
     }
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list-renter-owner/:id')
   async getTransactionsRenterByOwner(@Param('id', ParseUUIDPipe) id: string) {
+    const [data, count]: any =
+      await this.transactionService.listTransactionsRenterByOwner(id)
+
     return {
-      data: await this.transactionService.listTransactionsRenterByOwner(id),
       statusCode: HttpStatus.OK,
       message: 'Success',
+      count,
+      data,
     }
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list-owner/:id')
   async getTransactionsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+    const data = await this.transactionService.listTransactionsByOwner(id)
+
     return {
-      data: await this.transactionService.listTransactionsByOwner(id),
       statusCode: HttpStatus.OK,
       message: 'Success',
+      data,
     }
   }
 }
