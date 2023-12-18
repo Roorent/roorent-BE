@@ -8,6 +8,7 @@ import { UpdateReviewDTO } from './dto/update-review.dto'
 import { ProductsService } from '#/products/products.service'
 import { PhotoReviews } from '#/photo_reviews/entities/photo_reviews.entity'
 import { TransactionsService } from '#/transactions/transactions.service'
+import { Transactions } from '#/transactions/entities/transactions.entity'
 
 @Injectable()
 export class ReviewsService {
@@ -16,6 +17,8 @@ export class ReviewsService {
     private reviewsRepository: Repository<Reviews>,
     @InjectRepository(PhotoReviews)
     private photoReviewsRepository: Repository<PhotoReviews>,
+    @InjectRepository(Transactions)
+    private transactionsRepository: Repository<Transactions>,
     private transactionsService: TransactionsService,
     private userService: UsersService,
     private productService: ProductsService,
@@ -59,14 +62,22 @@ export class ReviewsService {
 
       const findOneUser = await this.userService.findOne(userId)
       const findOneProduct: any = await this.productService.findOneById(id)
-      const findTransactionId: any = await this.transactionsService.findOneById(payload.transactionsId)
+
+      const findTransactionByProduct =
+        await this.transactionsRepository.findOneOrFail({
+          where: {
+            rentApplications: { product: { id } },
+            user: { id: userId },
+          },
+          relations: { rentApplications: { product: true }, user: true },
+        })
 
       const reviewEntity = new Reviews()
       reviewEntity.rating = payload.rating
       reviewEntity.content = payload.content
       reviewEntity.user = findOneUser
       reviewEntity.product = findOneProduct
-      reviewEntity.transactions = findTransactionId
+      reviewEntity.transactions = findTransactionByProduct
 
       const insertReviews = await this.reviewsRepository.insert(reviewEntity)
 
@@ -77,20 +88,16 @@ export class ReviewsService {
         photoReviewsEntity.photo = [payload.photo]
       }
       photoReviewsEntity.reviews = insertReviews.identifiers[0].id
-      const insertPhotoReviews = await this.photoReviewsRepository.insert(photoReviewsEntity)
+      const insertPhotoReviews = await this.photoReviewsRepository.insert(
+        photoReviewsEntity,
+      )
 
-      return ([
-        await this.reviewsRepository.findOneOrFail({
-          where: {
-            id: insertReviews.identifiers[0].id,
-          },
-        }),
-        await this.photoReviewsRepository.findOneOrFail({
-          where: {
-            id: insertPhotoReviews.identifiers[0].id,
-          },
-        })
-       ] )
+      return await this.photoReviewsRepository.findOneOrFail({
+        where: {
+          id: insertPhotoReviews.identifiers[0].id,
+        },
+        relations: { reviews: true },
+      })
     } catch (err) {
       throw err
     }

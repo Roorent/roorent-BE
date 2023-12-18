@@ -107,7 +107,8 @@ export class TransactionsService {
   async listTransactionsRenterByOwner(id: string) {
     try {
       const renter: any = await this.rentApplicationsService.findOneById(id)
-      return await this.transactionsRepository.findOneOrFail({
+
+      const [data, count] = await this.transactionsRepository.findAndCount({
         where: { rentApplications: { product: renter.id } },
         relations: {
           user: true,
@@ -115,6 +116,8 @@ export class TransactionsService {
           rentApplications: { product: true },
         },
       })
+
+      return [data, count]
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {

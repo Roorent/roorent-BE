@@ -32,7 +32,7 @@ export class ProductsService {
     return this.productsRepository.findAndCount({
       where: {
         type: ProductsType.KOS,
-        active_status: true
+        active_status: true,
       },
       skip: --page * limit,
       take: limit,
@@ -50,7 +50,7 @@ export class ProductsService {
     return this.productsRepository.findAndCount({
       where: {
         type: ProductsType.HOTEL,
-        active_status: true
+        active_status: true,
       },
       skip: --page * limit,
       take: limit,
@@ -68,7 +68,7 @@ export class ProductsService {
     return this.productsRepository.findAndCount({
       where: {
         type: ProductsType.GEDUNG,
-        active_status: true
+        active_status: true,
       },
       skip: --page * limit,
       take: limit,
@@ -106,14 +106,15 @@ export class ProductsService {
     }
   }
 
-  async create( 
-    userId: string,
-    payload: CreateProductsDTO,
-  ) {
+  async create(userId: string, payload: CreateProductsDTO) {
     try {
       const findOneUserId = await this.userService.findOne(userId)
       const findCity = await this.citiesService.findOneByName(payload.city)
-      const cityId:any = findCity.id
+      const cityId: any = findCity.id
+
+      if (findOneUserId.level.name !== 'owner') {
+        return 'Only Owner can create products'
+      }
 
       const productDescriptionsEntity = new ProductDescriptions()
       productDescriptionsEntity.specifications = payload.specifications
@@ -124,10 +125,15 @@ export class ProductsService {
       specialRulesEntity.max_person = payload.max_person
       specialRulesEntity.gender = payload.gender
       specialRulesEntity.notes = payload.notes
-     
-      const insertProductDescriptions = await this.productDescriptionsRepository.insert(productDescriptionsEntity)
-      const insertSpecialRules = await this.specialRulesRepository.insert(specialRulesEntity)
-      
+
+      const insertProductDescriptions =
+        await this.productDescriptionsRepository.insert(
+          productDescriptionsEntity,
+        )
+      const insertSpecialRules = await this.specialRulesRepository.insert(
+        specialRulesEntity,
+      )
+
       const productsEntity = new Products()
       productsEntity.name = payload.name
       productsEntity.type = payload.type
@@ -138,11 +144,11 @@ export class ProductsService {
       productsEntity.location = payload.location
       productsEntity.user = findOneUserId
       productsEntity.cities = cityId
-      productsEntity.productDescriptions =  insertProductDescriptions.identifiers[0].id
+      productsEntity.productDescriptions =
+        insertProductDescriptions.identifiers[0].id
       productsEntity.specialRules = insertSpecialRules.identifiers[0].id
       const insertProduct = await this.productsRepository.insert(productsEntity)
 
-      
       const photoProductsEntity = new PhotoProducts()
       if (Array.isArray(payload.photo)) {
         photoProductsEntity.photo = payload.photo
@@ -152,20 +158,18 @@ export class ProductsService {
       photoProductsEntity.products = insertProduct.identifiers[0].id
       await this.photoProductsRepository.insert(photoProductsEntity)
 
-      return (
-        await this.productsRepository.findOneOrFail({
-          where: {
-            id: insertProduct.identifiers[0].id,
-          },
-          relations: {
-            user: true,
-            cities: true,
-            productDescriptions: true,
-            specialRules: true,
-            photoProducts: true,
-          },
-        })
-      )
+      return await this.productsRepository.findOneOrFail({
+        where: {
+          id: insertProduct.identifiers[0].id,
+        },
+        relations: {
+          user: true,
+          cities: true,
+          productDescriptions: true,
+          specialRules: true,
+          photoProducts: true,
+        },
+      })
     } catch (err) {
       throw err
     }
@@ -174,7 +178,7 @@ export class ProductsService {
   async update(id: string, payload: UpdateProductsDTO) {
     try {
       const allProducts = await this.productsRepository.findOneOrFail({
-        where: {id},
+        where: { id },
         relations: {
           user: true,
           cities: true,
@@ -191,33 +195,39 @@ export class ProductsService {
       const dataProductDesc = {
         specifications: payload.specifications,
         facilities: payload.facilities,
-        note: payload.note
+        note: payload.note,
       }
 
       const dataSpecialRules = {
         max_person: payload.max_person,
         gender: payload.gender,
-        note: payload.note
+        note: payload.note,
       }
 
       const dataProducts = {
         name: payload.name,
-        type : payload.type,
-        stock : payload.stock,
-        daily_price : payload.daily_price,
-        monthly_price : payload.monthly_price,
-        address : payload.address,
-        location : payload.location
+        type: payload.type,
+        stock: payload.stock,
+        daily_price: payload.daily_price,
+        monthly_price: payload.monthly_price,
+        address: payload.address,
+        location: payload.location,
       }
-      
+
       await this.productsRepository.update(id, dataProducts)
-      await this.productDescriptionsRepository.update(productDescId, dataProductDesc)
+      await this.productDescriptionsRepository.update(
+        productDescId,
+        dataProductDesc,
+      )
       await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
 
       const dataPhotoProducts = {
-        photo: payload.photo
+        photo: payload.photo,
       }
-     await this.photoProductsRepository.update(photoProductsId, dataPhotoProducts)
+      await this.photoProductsRepository.update(
+        photoProductsId,
+        dataPhotoProducts,
+      )
 
       return await this.productsRepository.findOneOrFail({
         relations: {
@@ -239,7 +249,7 @@ export class ProductsService {
   async softDeleteById(id: string) {
     try {
       const allProducts = await this.productsRepository.findOneOrFail({
-        where: {id},
+        where: { id },
         relations: {
           user: true,
           cities: true,
@@ -252,7 +262,7 @@ export class ProductsService {
       const productDescId = await allProducts.productDescriptions.id
       const specialRulesId = await allProducts.specialRules.id
       const photoProductsId = await allProducts.photoProducts[0].id
-      
+
       await this.productsRepository.softDelete(id)
       await this.productDescriptionsRepository.softDelete(productDescId)
       await this.specialRulesRepository.softDelete(specialRulesId)
@@ -321,57 +331,69 @@ export class ProductsService {
     }
   }
 
-  async recommendProductKos(city: string, page: number = 1, limit: number = 10){
+  async recommendProductKos(
+    city: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const findCity = await this.citiesService.findOneByName(city)
-    const cityId:any = findCity.id
+    const cityId: any = findCity.id
 
     return await this.productsRepository.findAndCount({
       where: {
         type: ProductsType.KOS,
         active_status: true,
-        cities: {id: cityId}
+        cities: { id: cityId },
       },
       skip: --page * limit,
       take: limit,
       relations: {
-        cities: true
-      }
+        cities: true,
+      },
     })
   }
 
-  async recommendProductHotel(city: string, page: number = 1, limit: number = 10){
+  async recommendProductHotel(
+    city: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const findCity = await this.citiesService.findOneByName(city)
-    const cityId:any = findCity.id
+    const cityId: any = findCity.id
 
     return await this.productsRepository.findAndCount({
       where: {
         type: ProductsType.HOTEL,
         active_status: true,
-        cities: {id: cityId}
+        cities: { id: cityId },
       },
       skip: --page * limit,
       take: limit,
       relations: {
-        cities: true
-      }
+        cities: true,
+      },
     })
   }
 
-  async recommendProductGedung(city: string, page: number = 1, limit: number = 10){
+  async recommendProductGedung(
+    city: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const findCity = await this.citiesService.findOneByName(city)
-    const cityId:any = findCity.id
+    const cityId: any = findCity.id
 
     return await this.productsRepository.findAndCount({
       where: {
         type: ProductsType.GEDUNG,
         active_status: true,
-        cities: {id: cityId}
+        cities: { id: cityId },
       },
       skip: --page * limit,
       take: limit,
       relations: {
-        cities: true
-      }
+        cities: true,
+      },
     })
   }
 
