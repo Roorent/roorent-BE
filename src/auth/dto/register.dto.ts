@@ -34,6 +34,6 @@ export class RegisterDTO {
 
   photo_ktp: string
 
-  @IsNotEmpty()
+  
   address: string
 }
