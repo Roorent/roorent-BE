@@ -1,5 +1,5 @@
 import { GenderUsers } from '#/biodatas/entities/biodatas.entity'
-import { IsEnum, IsNotEmpty } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 
 export class RegisterDTO {
   // @IsNotEmpty()
@@ -27,13 +27,15 @@ export class RegisterDTO {
   @IsNotEmpty()
   birth_date: Date
 
+  @IsOptional()
   photo_profile: string
 
   @IsNotEmpty()
   phone: string
 
+  @IsOptional()
   photo_ktp: string
 
-  
+  @IsOptional()
   address: string
 }
