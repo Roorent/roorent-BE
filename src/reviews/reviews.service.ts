@@ -82,11 +82,12 @@ export class ReviewsService {
       const insertReviews = await this.reviewsRepository.insert(reviewEntity)
 
       const photoReviewsEntity = new PhotoReviews()
-      if (Array.isArray(payload.photo)) {
-        photoReviewsEntity.photo = payload.photo
-      } else {
-        photoReviewsEntity.photo = [payload.photo]
-      }
+      photoReviewsEntity.photo = payload.photo
+      // if (Array.isArray(payload.photo)) {
+      //   photoReviewsEntity.photo = payload.photo
+      // } else {
+      //   photoReviewsEntity.photo = [payload.photo]
+      // }
       photoReviewsEntity.reviews = insertReviews.identifiers[0].id
       const insertPhotoReviews = await this.photoReviewsRepository.insert(
         photoReviewsEntity,

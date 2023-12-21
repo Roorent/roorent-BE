@@ -122,7 +122,6 @@ export class ProductsService {
       productDescriptionsEntity.note = payload.note
 
       const specialRulesEntity = new SpecialRules()
-      specialRulesEntity.max_person = payload.max_person
       specialRulesEntity.gender = payload.gender
       specialRulesEntity.notes = payload.notes
 
@@ -150,11 +149,7 @@ export class ProductsService {
       const insertProduct = await this.productsRepository.insert(productsEntity)
 
       const photoProductsEntity = new PhotoProducts()
-      if (Array.isArray(payload.photo)) {
-        photoProductsEntity.photo = payload.photo
-      } else {
-        photoProductsEntity.photo = [payload.photo]
-      }
+      photoProductsEntity.photo = payload.photo
       photoProductsEntity.products = insertProduct.identifiers[0].id
       await this.photoProductsRepository.insert(photoProductsEntity)
 
@@ -199,7 +194,6 @@ export class ProductsService {
       }
 
       const dataSpecialRules = {
-        max_person: payload.max_person,
         gender: payload.gender,
         note: payload.note,
       }

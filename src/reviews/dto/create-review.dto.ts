@@ -9,6 +9,6 @@ export class CreateReviewDTO {
   @IsString()
   content: string
 
-  @IsArray()
-  photo: string[]
+  @IsNotEmpty()
+  photo: string
 }

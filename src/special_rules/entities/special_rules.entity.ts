@@ -19,11 +19,6 @@ export class SpecialRules {
   id: string
 
   @Column({
-    type: 'int',
-  })
-  max_person: number
-
-  @Column({
     type: 'enum',
     enum: GenderProduct,
   })
