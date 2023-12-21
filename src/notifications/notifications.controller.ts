@@ -44,6 +44,18 @@ export class NotificationsController {
     }
   }
 
+  // @UseGuards(AuthGuard('jwt'))
+  @Get('/user/:id')
+  async findByUser(@Param('id', ParseUUIDPipe) id: string) {
+    const data = await this.notificationService.findByUser(id)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      data,
+    }
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Post(':receiverId')
   async create(
