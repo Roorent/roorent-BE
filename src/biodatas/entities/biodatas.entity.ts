@@ -80,6 +80,7 @@ export class Biodatas {
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true
   })
   address: string
 

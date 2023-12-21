@@ -20,9 +20,9 @@ import {
 } from 'typeorm'
 
 export enum ProductsType {
-  KOS = 'Kos',
-  HOTEL = 'Hotel',
-  GEDUNG = 'Gedung'
+  KOS = 'kost',
+  HOTEL = 'hotel',
+  GEDUNG = 'gedung'
 }
 @Entity()
 export class Products {

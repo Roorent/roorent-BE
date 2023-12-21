@@ -11,7 +11,8 @@ import {
   UseInterceptors,
   UploadedFile, 
   Res,
-  Query
+  Query,
+  HttpException
 } from '@nestjs/common';
 import { BiodatasService } from './biodatas.service';
 import { CreateBiodatasDTO } from './dto/create-biodatas.dto';
@@ -45,14 +46,17 @@ export class BiodatasController {
   @UseInterceptors(FileInterceptor('photo_ktp', storagePhotoKtp))
   uploadPhotKtp(@UploadedFile() photoKtp: Express.Multer.File){
    if(typeof photoKtp?.filename == "undefined"){
-    return {
-      statusCode: HttpStatus.BAD_REQUEST, 
-      message: "error upload file"
-    }
+    throw new HttpException(
+      {
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'file is not uploaded',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
    }
 
    return {
-    filename: photoKtp?.filename,
+    filename: photoKtp?.filename
   }
   }
 

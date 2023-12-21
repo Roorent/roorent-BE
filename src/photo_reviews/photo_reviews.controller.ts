@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { PhotoReviewsService } from './photo_reviews.service';
 import { HttpStatusCode } from 'axios';
 import { UpdatePhotoReviewsDTO } from './dto/update-photo_reviews.dto';
@@ -75,10 +75,13 @@ export class PhotoReviewsController {
   @UseInterceptors(FileInterceptor('photo-reviews', storagePhotoReviews))
   uploadPhotoReviews(@UploadedFile() photoReviews: Express.Multer.File){
     if(typeof photoReviews?.filename == "undefined"){
-      return {
-        statusCode: HttpStatus.BAD_REQUEST, 
-        message: "error upload file"
-      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: 'file is not uploaded',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
      }
   
      return {
