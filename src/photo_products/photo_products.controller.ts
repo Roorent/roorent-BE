@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Param,
   ParseUUIDPipe,
@@ -87,10 +88,13 @@ export class PhotoProductsController {
   @UseInterceptors(FileInterceptor('photo-products', storagePhotoProducts))
   uploadPhotoProducts(@UploadedFile() photoProducts: Express.Multer.File) {
     if (typeof photoProducts?.filename == 'undefined') {
-      return {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: 'error upload file',
-      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: 'file is not uploaded',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     return {

@@ -1,6 +1,6 @@
 import { ProductDescriptions } from '#/product_descriptions/entities/product_descriptions.entity'
 import { GenderProduct } from '#/special_rules/entities/special_rules.entity'
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber } from 'class-validator'
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional } from 'class-validator'
 
 export class CreateProductsDTO {
   @IsNotEmpty()
@@ -16,11 +16,11 @@ export class CreateProductsDTO {
   @IsInt()
   stock: number
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   daily_price: number
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   monthly_price: number
 
