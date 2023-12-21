@@ -17,7 +17,7 @@ import { Reviews } from '#/reviews/entities/reviews.entity'
       ProductDescriptions,
       SpecialRules,
       PhotoProducts,
-      Reviews
+      Reviews,
     ]),
     UsersModule,
     CitiesModule,

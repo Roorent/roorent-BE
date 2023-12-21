@@ -270,10 +270,25 @@ export class ProductsService {
 
   async listProductsByOwner(id: string) {
     try {
-      const owner = await this.userService.findOne(id)
-      return await this.productsRepository.findOneOrFail({
-        where: { user: { id: owner.id } },
+      const [data, count] = await this.photoProductsRepository.findAndCount({
+        relations: { products: { user: true } },
+        where: { products: { user: { id: id } } },
       })
+
+      const datas = data.map((item) => ({
+        id: item.products.id,
+        photo: item.photo,
+        name: item.products.name,
+        type: item.products.type,
+        stock: item.products.stock,
+        daily_price: item.products.daily_price,
+        monthly_price: item.products.monthly_price,
+        address: item.products.address,
+        active_status: item.products.active_status,
+        location: item.products.location,
+      }))
+
+      return [datas, count]
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
