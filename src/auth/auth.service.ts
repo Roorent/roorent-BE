@@ -94,16 +94,16 @@ export class AuthService {
         where: { email: payload.email },
         relations: ['level', 'biodata'],
       })
-      if (userOne.biodata.isActive == 'active') {
-        if (!userOne) {
-          throw new HttpException(
-            {
-              statusCode: HttpStatus.BAD_REQUEST,
-              error: 'Email is invalid',
-            },
-            HttpStatus.BAD_REQUEST,
+      if (!userOne) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'Email is invalid',
+          },
+          HttpStatus.BAD_REQUEST,
           )
         }
+        if (userOne.biodata.isActive == 'active') {
 
         const isMatch = await bcrypt.compare(payload.password, userOne.password)
 

@@ -52,13 +52,7 @@ export class PhotoReviewsService {
       )
 
       const photoReviewsEntity = new PhotoReviews()
-      if (Array.isArray(payload.photo)) {
-        photoReviewsEntity.photo = payload.photo;
-      } else {
-        photoReviewsEntity.photo = [payload.photo];
-      }
-
-      // photoReviewsEntity.photo = payload.photo
+      photoReviewsEntity.photo = payload.photo
       photoReviewsEntity.reviews = findOneReviewId
 
       const insertPhotoReviews = await this.photoReviewsRepository.insert(
@@ -79,12 +73,12 @@ export class PhotoReviewsService {
       await this.findOneById(id)
 
       const photoReviewsEntity = new PhotoReviews()
-      if (Array.isArray(payload.photo)) {
-        photoReviewsEntity.photo = payload.photo;
-      } else {
-        photoReviewsEntity.photo = [payload.photo];
-      }
-      // photoReviewsEntity.photo = payload.photo
+      // if (Array.isArray(payload.photo)) {
+      //   photoReviewsEntity.photo = payload.photo;
+      // } else {
+      //   photoReviewsEntity.photo = [payload.photo];
+      // }
+      photoReviewsEntity.photo = payload.photo
 
       await this.photoReviewsRepository.update(id, photoReviewsEntity)
 

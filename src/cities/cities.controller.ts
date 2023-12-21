@@ -15,8 +15,8 @@ export class CitiesController {
     }
 
     @Get()
-    async findAll(@Query('page') page: number, @Query('limit') limit: number){
-        const [data, count] = await this.citiesService.findAll(page, limit)
+    async findAll(){
+        const [data, count] = await this.citiesService.findAll()
 
         return{
             statusCode: HttpStatus.OK,
