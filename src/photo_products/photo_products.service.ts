@@ -52,13 +52,8 @@ export class PhotoProductsService {
       )
 
       const photoProductsEntity = new PhotoProducts()
-      if (Array.isArray(payload.photo)) {
-        photoProductsEntity.photo = payload.photo
-      } else {
-        photoProductsEntity.photo = [payload.photo]
-      }
 
-      // photoProductsEntity.photo = payload.photo
+      photoProductsEntity.photo = payload.photo
       photoProductsEntity.products = findOneProductId
 
       const insertPhotoProducts = await this.photoProductsRepository.insert(
@@ -79,12 +74,7 @@ export class PhotoProductsService {
       await this.findOneById(id)
 
       const photoProductsEntity = new PhotoProducts()
-      if (Array.isArray(payload.photo)) {
-        photoProductsEntity.photo = payload.photo
-      } else {
-        photoProductsEntity.photo = [payload.photo]
-      }
-      // photoProductsEntity.photo = payload.photo
+      photoProductsEntity.photo = payload.photo
 
       await this.photoProductsRepository.update(id, photoProductsEntity)
 

@@ -10,11 +10,11 @@ export class CitiesService {
         private citiesRepository: Repository<Cities>
     ){}
 
-    findAll(page: number = 1 , limit: number = 10){
+    findAll(){
         try {
             return this.citiesRepository.findAndCount({
-            skip: --page * limit,
-            take: limit,
+            // skip: --page * limit,
+            // take: limit,
             })
         } catch (e) {
             throw e
