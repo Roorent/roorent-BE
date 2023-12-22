@@ -44,10 +44,12 @@ export class PhotoProductsController {
 
   @Get(':id')
   async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
+    const data = await this.photoProductsService.findOneById(id)
+
     return {
       statusCode: HttpStatus.OK,
       message: 'succes',
-      data: await this.photoProductsService.findOneById(id),
+      data,
     }
   }
 
@@ -94,7 +96,7 @@ export class PhotoProductsController {
           error: 'file is not uploaded',
         },
         HttpStatus.BAD_REQUEST,
-      );
+      )
     }
 
     return {

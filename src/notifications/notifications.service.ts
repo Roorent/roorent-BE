@@ -37,7 +37,30 @@ export class NotificationsService {
     }
   }
 
-  async create(payload: CreateNotifDTO, senderId: string, receiverId: string) {
+  async findByUser(id: string) {
+    try {
+      const findNotif = await this.notifRepository.findOneOrFail({
+        where: { receiver: { id } },
+        relations: { receiver: true },
+      })
+
+      const data = {
+        id: findNotif.id,
+        title: findNotif.title,
+        content: findNotif.content,
+        readable: findNotif.readable,
+        createdAt: findNotif.createdAt,
+        updatedAt: findNotif.updatedAt,
+        receiverId: findNotif.receiver.id,
+      }
+
+      return data
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async create(payload: CreateNotifDTO, receiverId: string, senderId: string) {
     try {
       const receiver = await this.usersService.findOne(receiverId)
       const sender = await this.usersService.findOne(senderId)
