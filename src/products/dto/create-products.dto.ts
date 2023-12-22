@@ -1,42 +1,51 @@
-import { IsInt, IsNotEmpty } from "class-validator";
+import { ProductDescriptions } from '#/product_descriptions/entities/product_descriptions.entity'
+import { GenderProduct } from '#/special_rules/entities/special_rules.entity'
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional } from 'class-validator'
 
 export class CreateProductsDTO {
-    @IsNotEmpty()
-    user_id: string;
+  @IsNotEmpty()
+  city: string
 
-    @IsNotEmpty()
-    city_id: string;
+  @IsNotEmpty()
+  name: string
 
-    @IsNotEmpty()
-    product_desc_id: string;
+  @IsNotEmpty()
+  type: string
 
-    @IsNotEmpty()
-    special_rules_id: string;
+  @IsNotEmpty()
+  @IsInt()
+  stock: number
 
-    @IsNotEmpty()
-    name: string;
+  @IsOptional()
+  @IsInt()
+  daily_price: number
 
-    @IsNotEmpty()
-    type: string;
+  @IsOptional()
+  @IsInt()
+  monthly_price: number
 
-    @IsNotEmpty()
-    @IsInt()
-    stock: number;
+  @IsNotEmpty()
+  address: string
 
-    @IsNotEmpty()
-    @IsInt()
-    daily_price: number;
+  @IsNotEmpty()
+  location: string
 
-    @IsNotEmpty()
-    @IsInt()
-    monthly_price: number;
+  @IsNotEmpty()
+  photo: string
 
-    @IsNotEmpty()
-    address: string;
+  @IsNotEmpty()
+  specifications: string
 
-    @IsNotEmpty()
-    latitude: string;
+  @IsNotEmpty()
+  facilities: string
 
-    @IsNotEmpty()
-    longitude: string;
+  @IsNotEmpty()
+  note: string
+
+  @IsNotEmpty()
+  @IsEnum(GenderProduct)
+  gender: GenderProduct
+
+  @IsNotEmpty()
+  notes: string
 }

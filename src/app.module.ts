@@ -15,13 +15,24 @@ import { BiodatasModule } from './biodatas/biodatas.module'
 import { SpecialRulesModule } from './special_rules/special_rules.module'
 import { BanksModule } from './banks/banks.module'
 import { ProductDescriptionsModule } from './product_descriptions/product_descriptions.module'
-import { CitiesModule } from './cities/cities.module';
-import { ProductsModule } from './products/products.module';
-import { PhotoProductsModule } from './photo_products/photo_products.module';
-import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module';
+import { CitiesModule } from './cities/cities.module'
+import { ProductsModule } from './products/products.module'
+import { PhotoProductsModule } from './photo_products/photo_products.module'
+import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module'
+import { FavProductModule } from './fav_product/favorits.module'
+import { ChatsModule } from './chats/chats.module'
+import { NotificationsModule } from './notifications/notifications.module'
+import { RentApplicationsModule } from './rent_applications/rent_applications.module'
+import { TransactionsModule } from './transactions/transactions.module'
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path'
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'upload/photo-products'),
+      serveRoot: '/products/images',
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         base: undefined,
@@ -115,7 +126,12 @@ import { PhotoReviewsModule } from './photo_reviews/photo_reviews.module';
     CitiesModule,
     ProductsModule,
     PhotoProductsModule,
+    FavProductModule,
     PhotoReviewsModule,
+    ChatsModule,
+    NotificationsModule,
+    RentApplicationsModule,
+    TransactionsModule,
   ],
 })
 export class AppModule {}

@@ -1,10 +1,8 @@
-import { Products } from '#/products/enitities/products.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -21,11 +19,6 @@ export class SpecialRules {
   id: string
 
   @Column({
-    type: 'int',
-  })
-  max_person: number
-
-  @Column({
     type: 'enum',
     enum: GenderProduct,
   })
@@ -35,7 +28,7 @@ export class SpecialRules {
     type: 'varchar',
     length: 255,
   })
-  general: string
+  notes: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

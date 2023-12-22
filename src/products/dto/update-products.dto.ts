@@ -1,30 +1,47 @@
-import { IsInt, IsNotEmpty } from "class-validator";
+import { GenderProduct } from '#/special_rules/entities/special_rules.entity'
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber } from 'class-validator'
 
 export class UpdateProductsDTO {
-    @IsNotEmpty()
-    name: string;
+  @IsNotEmpty()
+  name: string
 
-    @IsNotEmpty()
-    type: string;
+  @IsNotEmpty()
+  type: string
 
-    @IsNotEmpty()
-    @IsInt()
-    stock: number;
+  @IsNotEmpty()
+  @IsInt()
+  stock: number
 
-    @IsNotEmpty()
-    @IsInt()
-    daily_price: number;
+  @IsNotEmpty()
+  @IsInt()
+  daily_price: number
 
-    @IsNotEmpty()
-    @IsInt()
-    monthly_price: number;
+  @IsNotEmpty()
+  @IsInt()
+  monthly_price: number
 
-    @IsNotEmpty()
-    address: string;
+  @IsNotEmpty()
+  address: string
 
-    @IsNotEmpty()
-    latitude: string;
+  @IsNotEmpty()
+  location: string
 
-    @IsNotEmpty()
-    longitude: string;
+  @IsNotEmpty()
+  photo: string
+
+  @IsNotEmpty()
+  specifications: string
+
+  @IsNotEmpty()
+  facilities: string
+
+  @IsNotEmpty()
+  note: string
+
+  @IsNotEmpty()
+  @IsEnum(GenderProduct)
+  gender: GenderProduct
+
+  @IsNotEmpty()
+  Note: string
 }

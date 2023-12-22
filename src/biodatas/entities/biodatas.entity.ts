@@ -18,6 +18,7 @@ export enum StatusUsers {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   PENDING = 'pending',
+  REJECT = 'reject'
 }
 
 @Entity()
@@ -79,6 +80,7 @@ export class Biodatas {
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true
   })
   address: string
 
@@ -88,6 +90,12 @@ export class Biodatas {
     default: StatusUsers.PENDING,
   })
   isActive: StatusUsers
+
+  @Column({
+    type: 'text',
+    nullable: true
+  })
+  reason: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

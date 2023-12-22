@@ -22,7 +22,7 @@ export class ProductDescriptions{
         type: "varchar",
         length: 255
     })
-    general: string;
+    note: string;
 
     @CreateDateColumn({
         type: 'timestamp with time zone',

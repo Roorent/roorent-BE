@@ -10,9 +10,12 @@ export class LevelsService {
     private levelsRepository: Repository<Levels>,
   ) {}
 
-  findAll() {
+  findAll(page: number = 1 , limit: number = 10) {
     try {
-      return this.levelsRepository.findAndCount()
+      return this.levelsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+      })
     } catch (err) {
       throw err
     }

@@ -6,13 +6,11 @@ export class PhotoReviews{
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
   @Column({
     type: 'varchar',
-    array: true,
     nullable: true,
   })
-  photo: string[];
+  photo: string;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

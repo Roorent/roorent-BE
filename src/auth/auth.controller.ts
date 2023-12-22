@@ -34,6 +34,15 @@ export class AuthController {
       data: await this.authService.login(payload),
     }
   }
+  
+  @Post('adm/register')
+  async registerAdm(@Query('role') level: string, @Body() payload: RegisterDTO){
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'success',
+      data: await this.authService.registerAdm({ ...payload, level }),
+    }
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/profile')

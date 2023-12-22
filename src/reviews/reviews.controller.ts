@@ -8,27 +8,33 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common'
 import { ReviewsService } from './reviews.service'
 import { CreateReviewDTO } from './dto/create-review.dto'
 import { UpdateReviewDTO } from './dto/update-review.dto'
+import { AuthGuard } from '@nestjs/passport'
 
 @Controller('reviews')
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  async findAll() {
-    const [data, count] = await this.reviewService.findAll()
+  async findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.reviewService.findAll(page, limit)
 
     return {
       statusCode: HttpStatus.OK,
-      messae: 'Success',
+      message: 'Success',
       count,
       data,
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.reviewService.findOne(id)
@@ -40,39 +46,68 @@ export class ReviewsController {
     }
   }
 
-  @Post()
-  async create(@Body() payload: CreateReviewDTO) {
-    const datas = await this.reviewService.create(payload)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/product/:id')
+  async findByProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const [data, count] = await this.reviewService.findByProduct(
+      page,
+      limit,
+      id,
+    )
 
     return {
-      statusCode: HttpStatus.CREATED,
+      statusCode: HttpStatus.OK,
       message: 'Success',
-      data: datas,
+      count,
+      data,
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id')
+  async create(
+    @Req() req,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() payload: CreateReviewDTO )
+    {
+    const userId = req.user.id 
+    const data = await this.reviewService.create(id, userId, payload)
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() payload: UpdateReviewDTO,
   ) {
-    const datas = await this.reviewService.update(id, payload)
+    const data = await this.reviewService.update(id, payload)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-      data: datas,
+      data,
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    const datas = await this.reviewService.remove(id)
+    const data = await this.reviewService.remove(id)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-      data: datas,
+      data,
     }
   }
 }

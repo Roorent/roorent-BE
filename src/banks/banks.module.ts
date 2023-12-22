@@ -8,6 +8,7 @@ import { BanksService } from './banks.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Banks]), UsersModule],
   controllers: [BanksController],
-  providers: [BanksService]
+  providers: [BanksService],
+  exports: [BanksService]
 })
 export class BanksModule {}
