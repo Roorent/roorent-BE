@@ -10,6 +10,7 @@ import { ProductDescriptions } from '#/product_descriptions/entities/product_des
 import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
 import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
 import { Reviews } from '#/reviews/entities/reviews.entity'
+import { log } from 'console'
 
 @Injectable()
 export class ProductsService {
@@ -149,9 +150,16 @@ export class ProductsService {
       const insertProduct = await this.productsRepository.insert(productsEntity)
 
       const photoProductsEntity = new PhotoProducts()
-      photoProductsEntity.photo = payload.photo
-      photoProductsEntity.products = insertProduct.identifiers[0].id
-      await this.photoProductsRepository.insert(photoProductsEntity)
+
+      payload.photo.forEach(async (item) => {
+        photoProductsEntity.photo = item 
+        photoProductsEntity.products = insertProduct.identifiers[0].id
+        await this.photoProductsRepository.insert(photoProductsEntity)
+      })
+
+      // photoProductsEntity.photo = payload.photo
+      // photoProductsEntity.products = insertProduct.identifiers[0].id
+      // await this.photoProductsRepository.insert(photoProductsEntity)
 
       return await this.productsRepository.findOneOrFail({
         where: {
@@ -216,7 +224,7 @@ export class ProductsService {
       await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
 
       const dataPhotoProducts = {
-        photo: payload.photo,
+        photo: payload.photo[0]
       }
       await this.photoProductsRepository.update(
         photoProductsId,
@@ -273,6 +281,7 @@ export class ProductsService {
       const [data, count] = await this.photoProductsRepository.findAndCount({
         relations: { products: { user: true } },
         where: { products: { user: { id: id } } },
+        order: { updatedAt: "DESC" }
       })
 
       const datas = data.map((item) => ({

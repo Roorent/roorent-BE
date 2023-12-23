@@ -66,7 +66,7 @@ export class Biodatas {
 
   @Column({
     type: 'char',
-    length: 13,
+    length: 16,
   })
   phone: string
 

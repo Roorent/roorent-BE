@@ -27,7 +27,8 @@ export class UpdateProductsDTO {
   location: string
 
   @IsNotEmpty()
-  photo: string
+  @IsArray()
+  photo: string[]
 
   @IsNotEmpty()
   specifications: string

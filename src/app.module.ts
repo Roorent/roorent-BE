@@ -108,7 +108,7 @@ import { join } from 'path'
           entities: [],
           synchronize: configService.get<string>('env') === 'development',
           autoLoadEntities: true,
-          logging: false,
+          logging: ["query","error"],
           namingStrategy: new SnakeNamingStrategy(),
         }
       },
