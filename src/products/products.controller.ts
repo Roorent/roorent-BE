@@ -193,9 +193,13 @@ export class ProductsController {
   }
 
   @Get('/find-owner/:id')
-  async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+  async getProductsByOwner(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('type') type?: string,
+  ) {
     const [data, count]: any = await this.productsService.listProductsByOwner(
       id,
+      type,
     )
     return {
       statusCode: HttpStatus.OK,

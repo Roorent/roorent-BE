@@ -152,7 +152,7 @@ export class ProductsService {
       const photoProductsEntity = new PhotoProducts()
 
       payload.photo.forEach(async (item) => {
-        photoProductsEntity.photo = item 
+        photoProductsEntity.photo = item
         photoProductsEntity.products = insertProduct.identifiers[0].id
         await this.photoProductsRepository.insert(photoProductsEntity)
       })
@@ -224,7 +224,7 @@ export class ProductsService {
       await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
 
       const dataPhotoProducts = {
-        photo: payload.photo[0]
+        photo: payload.photo[0],
       }
       await this.photoProductsRepository.update(
         photoProductsId,
@@ -276,13 +276,23 @@ export class ProductsService {
     }
   }
 
-  async listProductsByOwner(id: string) {
+  async listProductsByOwner(id: string, types: string) {
     try {
-      const [data, count] = await this.photoProductsRepository.findAndCount({
-        relations: { products: { user: true } },
-        where: { products: { user: { id: id } } },
-        order: { updatedAt: "DESC" }
-      })
+      let data: any, count: any
+
+      if (types === 'semua') {
+        ;[data, count] = await this.photoProductsRepository.findAndCount({
+          relations: { products: { user: true } },
+          where: { products: { user: { id: id } } },
+          order: { updatedAt: 'DESC' },
+        })
+      } else {
+        ;[data, count] = await this.photoProductsRepository.findAndCount({
+          relations: { products: { user: true } },
+          where: { products: { user: { id: id }, type: types } },
+          order: { updatedAt: 'DESC' },
+        })
+      }
 
       const datas = data.map((item) => ({
         id: item.products.id,
