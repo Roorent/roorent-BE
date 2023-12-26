@@ -57,8 +57,12 @@ export class PhotoProductsService {
       // } else {
       //   photoProductsEntity.photo = [payload.photo];
       // }
-      // photoProductsEntity.photo = payload.photo
-      photoProductsEntity.products = findOneProductId
+      payload.photo.forEach(async (item) => {
+        photoProductsEntity.photo = item 
+        photoProductsEntity.products = findOneProductId
+        await this.photoProductsRepository.insert(photoProductsEntity)
+      })
+      // photoProductsEntity.products = findOneProductId
 
       const insertPhotoProducts = await this.photoProductsRepository.insert(
         photoProductsEntity,
@@ -78,13 +82,9 @@ export class PhotoProductsService {
       await this.findOneById(id)
 
       const photoProductsEntity = new PhotoProducts()
-      // if (Array.isArray(payload.photo)) {
-      //   photoProductsEntity.photo = payload.photo;
-      // } else {
-      //   photoProductsEntity.photo = [payload.photo];
-      // }
-      // photoProductsEntity.photo = payload.photo
-
+      payload.photo.forEach(async (item) => {
+        photoProductsEntity.photo = item 
+      })
       await this.photoProductsRepository.update(id, photoProductsEntity)
 
       return await this.photoProductsRepository.findOneOrFail({

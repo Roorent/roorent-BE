@@ -44,5 +44,5 @@ export class UpdateProductsDTO {
   gender: GenderProduct
 
   @IsNotEmpty()
-  Note: string
+  notes: string
 }

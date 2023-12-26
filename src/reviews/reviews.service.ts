@@ -82,23 +82,26 @@ export class ReviewsService {
       const insertReviews = await this.reviewsRepository.insert(reviewEntity)
 
       const photoReviewsEntity = new PhotoReviews()
-      photoReviewsEntity.photo = payload.photo
-      // if (Array.isArray(payload.photo)) {
-      //   photoReviewsEntity.photo = payload.photo
-      // } else {
-      //   photoReviewsEntity.photo = [payload.photo]
-      // }
-      photoReviewsEntity.reviews = insertReviews.identifiers[0].id
-      const insertPhotoReviews = await this.photoReviewsRepository.insert(
-        photoReviewsEntity,
-      )
-
-      return await this.photoReviewsRepository.findOneOrFail({
-        where: {
-          id: insertPhotoReviews.identifiers[0].id,
-        },
-        relations: { reviews: true },
+      payload.photo.forEach(async (item) => {
+        photoReviewsEntity.photo = item 
+        photoReviewsEntity.reviews = insertReviews.identifiers[0].id
+        await this.photoReviewsRepository.insert(
+          photoReviewsEntity,
+        )
       })
+      // const insertPhotoReviews = await this.photoReviewsRepository.insert(
+      //   photoReviewsEntity,
+      // )
+
+      // return await this.photoReviewsRepository.findOneOrFail({
+      //   where: {
+      //     id: insertPhotoReviews.identifiers[0].id,
+      //   },
+      //   relations: { reviews: true },
+      // })
+      return (
+        this.findAll()
+      )
     } catch (err) {
       throw err
     }

@@ -10,7 +10,6 @@ import { ProductDescriptions } from '#/product_descriptions/entities/product_des
 import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
 import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
 import { Reviews } from '#/reviews/entities/reviews.entity'
-import { log } from 'console'
 
 @Injectable()
 export class ProductsService {
@@ -157,10 +156,6 @@ export class ProductsService {
         await this.photoProductsRepository.insert(photoProductsEntity)
       })
 
-      // photoProductsEntity.photo = payload.photo
-      // photoProductsEntity.products = insertProduct.identifiers[0].id
-      // await this.photoProductsRepository.insert(photoProductsEntity)
-
       return await this.productsRepository.findOneOrFail({
         where: {
           id: insertProduct.identifiers[0].id,
@@ -191,9 +186,9 @@ export class ProductsService {
         },
       })
 
-      const productDescId = await allProducts.productDescriptions.id
-      const specialRulesId = await allProducts.specialRules.id
-      const photoProductsId = await allProducts.photoProducts[0].id
+      const productDescId = allProducts.productDescriptions.id
+      const specialRulesId = allProducts.specialRules.id
+      const productsId: any = allProducts.id
 
       const dataProductDesc = {
         specifications: payload.specifications,
@@ -203,7 +198,7 @@ export class ProductsService {
 
       const dataSpecialRules = {
         gender: payload.gender,
-        note: payload.note,
+        notes: payload.notes,
       }
 
       const dataProducts = {
@@ -223,13 +218,14 @@ export class ProductsService {
       )
       await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
 
-      const dataPhotoProducts = {
-        photo: payload.photo[0],
-      }
-      await this.photoProductsRepository.update(
-        photoProductsId,
-        dataPhotoProducts,
-      )
+      await this.photoProductsRepository.delete({ products: productsId })
+
+      payload.photo.map(async (value) => {
+        const photoProductsEntity = new PhotoProducts()
+        photoProductsEntity.products = productsId
+        photoProductsEntity.photo = value
+        await this.photoProductsRepository.insert(photoProductsEntity)
+      })
 
       return await this.productsRepository.findOneOrFail({
         relations: {
