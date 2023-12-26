@@ -10,7 +10,6 @@ import { ProductDescriptions } from '#/product_descriptions/entities/product_des
 import { SpecialRules } from '#/special_rules/entities/special_rules.entity'
 import { PhotoProducts } from '#/photo_products/entities/photo_products.entity'
 import { Reviews } from '#/reviews/entities/reviews.entity'
-import { log } from 'console'
 
 @Injectable()
 export class ProductsService {
@@ -85,16 +84,47 @@ export class ProductsService {
 
   async findOneById(id: string) {
     try {
-      return await this.productsRepository.findOneOrFail({
+      const productById = await this.productsRepository.findOneOrFail({
         where: { id },
         relations: {
-          user: true,
+          user: { biodata: true },
           cities: true,
           productDescriptions: true,
           specialRules: true,
           photoProducts: true,
         },
       })
+
+      const photoProduct = await this.photoProductsRepository.findOneOrFail({
+        where: { id: productById.photoProducts[0].id },
+      })
+
+      const data = {
+        id: productById.id,
+        name: productById.name,
+        type: productById.type,
+        stock: productById.stock,
+        daily_price: productById.daily_price,
+        monthly_price: productById.monthly_price,
+        address: productById.address,
+        active_status: productById.active_status,
+        location: productById.location,
+        city: productById.cities.name,
+        photo: photoProduct.photo,
+        specifications: productById.productDescriptions.specifications,
+        facilities: productById.productDescriptions.facilities,
+        note: productById.productDescriptions.note,
+        user_id: productById.user.id,
+        user_name:
+          productById.user.biodata.first_name +
+          ' ' +
+          productById.user.biodata.last_name,
+        user_photo: productById.user.biodata.photo_profile,
+        sr_gender: productById.specialRules.gender,
+        sr_notes: productById.specialRules.notes,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
