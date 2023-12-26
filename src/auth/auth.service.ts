@@ -114,10 +114,9 @@ export class AuthService {
             error: 'Email salah',
           },
           HttpStatus.BAD_REQUEST,
-          )
-        }
-        if (userOne.biodata.isActive == 'active') {
-
+        )
+      }
+      if (userOne.biodata.isActive == 'active') {
         const isMatch = await bcrypt.compare(payload.password, userOne.password)
 
         if (!isMatch) {
@@ -134,6 +133,7 @@ export class AuthService {
           id: userOne.id,
           role: userOne.level.name,
           firstname: userOne.biodata.first_name,
+          photo: userOne.biodata.photo_profile,
         }
 
         return { access_token: await this.jwtService.sign(datas) }
