@@ -95,10 +95,6 @@ export class ProductsService {
         },
       })
 
-      const photoProduct = await this.photoProductsRepository.findOneOrFail({
-        where: { id: productById.photoProducts[0].id },
-      })
-
       const data = {
         id: productById.id,
         name: productById.name,
@@ -110,7 +106,7 @@ export class ProductsService {
         active_status: productById.active_status,
         location: productById.location,
         city: productById.cities.name,
-        photo: photoProduct.photo,
+        photo: productById.photoProducts[0].photo,
         specifications: productById.productDescriptions.specifications,
         facilities: productById.productDescriptions.facilities,
         descriptions: productById.productDescriptions.descriptions,
@@ -122,7 +118,7 @@ export class ProductsService {
         user_photo: productById.user.biodata.photo_profile,
         gender: productById.specialRules.gender,
         rules: productById.specialRules.rules,
-        photoProducts: productById.photoProducts
+        photoProducts: productById.photoProducts,
       }
 
       return data
@@ -309,30 +305,34 @@ export class ProductsService {
       let data: any, count: any
 
       if (types === 'semua') {
-        ;[data, count] = await this.photoProductsRepository.findAndCount({
-          relations: { products: { user: true } },
-          where: { products: { user: { id: id } } },
-          order: { updatedAt: 'DESC' },
+        ;[data, count] = await this.productsRepository.findAndCount({
+          where: { user: { id: id } },
+          relations: {
+            cities: true,
+            photoProducts: true,
+          },
         })
       } else {
-        ;[data, count] = await this.photoProductsRepository.findAndCount({
-          relations: { products: { user: true } },
-          where: { products: { user: { id: id }, type: types } },
-          order: { updatedAt: 'DESC' },
+        ;[data, count] = await this.productsRepository.findAndCount({
+          where: { user: { id: id }, type: types },
+          relations: {
+            cities: true,
+            photoProducts: true,
+          },
         })
       }
 
       const datas = data.map((item) => ({
-        id: item.products.id,
-        photo: item.photo,
-        name: item.products.name,
-        type: item.products.type,
-        stock: item.products.stock,
-        daily_price: item.products.daily_price,
-        monthly_price: item.products.monthly_price,
-        address: item.products.address,
-        active_status: item.products.active_status,
-        location: item.products.location,
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        stock: item.stock,
+        daily_price: item.daily_price,
+        monthly_price: item.monthly_price,
+        address: item.address,
+        photo: item.photoProducts[0]?.photo,
+        active_status: item.active_status,
+        location: item.location,
       }))
 
       return [datas, count]
