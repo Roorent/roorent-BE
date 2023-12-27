@@ -79,10 +79,18 @@ export class PhotoProductsController {
   }
 
   @Delete('/filename/:fileName')
-  async deletePhoto(@Param('fileName') fileName: string) {
+  async deletePhotoByName(@Param('fileName') fileName: string) {
     return {
       statusCode: HttpStatus.OK,
       message: await this.photoProductsService.deletePhotoByName(fileName),
+    }
+  }
+
+  @Delete('/invalid-files')
+  async deleteInvalidFiles() {
+    return {
+      statusCode: HttpStatus.OK,
+      message: await this.photoProductsService.deleteInvalidFiles(),
     }
   }
 
