@@ -26,9 +26,8 @@ export class SpecialRules {
 
   @Column({
     type: 'varchar',
-    length: 255,
   })
-  notes: string
+  rules: string
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

@@ -8,21 +8,18 @@ export class ProductDescriptions{
 
     @Column({
         type: "varchar",
-        length: 255
     })
     specifications: string;
 
     @Column({
         type: "varchar",
-        length: 255
     })
     facilities: string;
     
     @Column({
         type: "varchar",
-        length: 255
     })
-    note: string;
+    descriptions: string;
 
     @CreateDateColumn({
         type: 'timestamp with time zone',

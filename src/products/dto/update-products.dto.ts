@@ -37,12 +37,12 @@ export class UpdateProductsDTO {
   facilities: string
 
   @IsNotEmpty()
-  note: string
+  descriptions: string
 
   @IsNotEmpty()
   @IsEnum(GenderProduct)
   gender: GenderProduct
 
   @IsNotEmpty()
-  notes: string
+  rules: string
 }

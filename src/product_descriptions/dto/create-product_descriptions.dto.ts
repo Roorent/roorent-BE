@@ -8,5 +8,5 @@ export class CreateProductDescriptionsDTO{
     facilities: string;
 
     @IsNotEmpty()
-    general: string;
+    descriptions: string;
 }

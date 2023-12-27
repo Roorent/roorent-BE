@@ -113,15 +113,15 @@ export class ProductsService {
         photo: photoProduct.photo,
         specifications: productById.productDescriptions.specifications,
         facilities: productById.productDescriptions.facilities,
-        note: productById.productDescriptions.note,
+        descriptions: productById.productDescriptions.descriptions,
         user_id: productById.user.id,
         user_name:
           productById.user.biodata.first_name +
           ' ' +
           productById.user.biodata.last_name,
         user_photo: productById.user.biodata.photo_profile,
-        sr_gender: productById.specialRules.gender,
-        sr_notes: productById.specialRules.notes,
+        gender: productById.specialRules.gender,
+        rules: productById.specialRules.rules,
         photoProducts: productById.photoProducts
       }
 
@@ -151,11 +151,11 @@ export class ProductsService {
       const productDescriptionsEntity = new ProductDescriptions()
       productDescriptionsEntity.specifications = payload.specifications
       productDescriptionsEntity.facilities = payload.facilities
-      productDescriptionsEntity.note = payload.note
+      productDescriptionsEntity.descriptions = payload.descriptions
 
       const specialRulesEntity = new SpecialRules()
       specialRulesEntity.gender = payload.gender
-      specialRulesEntity.notes = payload.notes
+      specialRulesEntity.rules = payload.rules
 
       const insertProductDescriptions =
         await this.productDescriptionsRepository.insert(
@@ -225,12 +225,12 @@ export class ProductsService {
       const dataProductDesc = {
         specifications: payload.specifications,
         facilities: payload.facilities,
-        note: payload.note,
+        descriptions: payload.descriptions,
       }
 
       const dataSpecialRules = {
         gender: payload.gender,
-        notes: payload.notes,
+        rules: payload.rules,
       }
 
       const dataProducts = {

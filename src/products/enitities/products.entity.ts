@@ -31,7 +31,6 @@ export class Products {
 
   @Column({
     type: 'varchar',
-    length: 120,
   })
   name: string
 
@@ -61,7 +60,6 @@ export class Products {
 
   @Column({
     type: 'varchar',
-    length: 255,
   })
   address: string
 
@@ -73,7 +71,6 @@ export class Products {
 
   @Column({
     type: 'varchar',
-    length: 255,
   })
   location: string
 
