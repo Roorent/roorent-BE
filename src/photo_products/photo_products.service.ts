@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PhotoProducts } from './entities/photo_products.entity'
 import { EntityNotFoundError, Repository } from 'typeorm'
+import * as fs from 'fs/promises'
 import { ProductsService } from '#/products/products.service'
 import { CreatePhotoProductsDTO } from './dto/create-photo_products.dto'
 import { UpdatePhotoProductsDTO } from './dto/update-photo_products.dto'
@@ -52,17 +53,12 @@ export class PhotoProductsService {
       )
 
       const photoProductsEntity = new PhotoProducts()
-      // if (Array.isArray(payload.photo)) {
-      //   photoProductsEntity.photo = payload.photo;
-      // } else {
-      //   photoProductsEntity.photo = [payload.photo];
-      // }
+
       payload.photo.forEach(async (item) => {
-        photoProductsEntity.photo = item 
+        photoProductsEntity.photo = item
         photoProductsEntity.products = findOneProductId
         await this.photoProductsRepository.insert(photoProductsEntity)
       })
-      // photoProductsEntity.products = findOneProductId
 
       const insertPhotoProducts = await this.photoProductsRepository.insert(
         photoProductsEntity,
@@ -83,7 +79,7 @@ export class PhotoProductsService {
 
       const photoProductsEntity = new PhotoProducts()
       payload.photo.forEach(async (item) => {
-        photoProductsEntity.photo = item 
+        photoProductsEntity.photo = item
       })
       await this.photoProductsRepository.update(id, photoProductsEntity)
 
@@ -100,10 +96,20 @@ export class PhotoProductsService {
   async softDeleteById(id: string) {
     try {
       await this.findOneById(id)
-
       await this.photoProductsRepository.softDelete(id)
 
-      return 'Success'
+      return 'Success delete photo product'
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async deletePhotoByName(fileName: string) {
+    const filePath = `upload/photo-products/${fileName}`
+
+    try {
+      await fs.unlink(filePath)
+      return 'Success delete file photo product'
     } catch (err) {
       throw err
     }
