@@ -122,6 +122,7 @@ export class ProductsService {
         user_photo: productById.user.biodata.photo_profile,
         sr_gender: productById.specialRules.gender,
         sr_notes: productById.specialRules.notes,
+        photoProducts: productById.photoProducts
       }
 
       return data
