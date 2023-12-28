@@ -51,10 +51,12 @@ export class BanksController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user/:id')
   async getDetailByUser(@Param('id', ParseUUIDPipe) id: string) {
+    const data = await this.banksService.findOneByUser(id)
+
     return {
       statusCode: HttpStatus.OK,
       message: 'succes',
-      data: await this.banksService.findOneByUser(id),
+      data,
     }
   }
 
