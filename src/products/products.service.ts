@@ -302,25 +302,13 @@ export class ProductsService {
 
   async listProductsByOwner(id: string, types: string) {
     try {
-      let data: any, count: any
-
-      if (types === 'semua') {
-        ;[data, count] = await this.productsRepository.findAndCount({
-          where: { user: { id: id } },
-          relations: {
-            cities: true,
-            photoProducts: true,
-          },
-        })
-      } else {
-        ;[data, count] = await this.productsRepository.findAndCount({
-          where: { user: { id: id }, type: types },
-          relations: {
-            cities: true,
-            photoProducts: true,
-          },
-        })
-      }
+      let [data, count] = await this.productsRepository.findAndCount({
+        where: { user: { id: id }, type: types },
+        relations: {
+          cities: true,
+          photoProducts: true,
+        },
+      })
 
       const datas = data.map((item) => ({
         id: item.id,

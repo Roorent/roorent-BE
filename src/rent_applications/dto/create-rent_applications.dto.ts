@@ -11,7 +11,4 @@ export class CreateRentApplicationsDTO {
   @IsNotEmpty()
   @IsEnum(RentalType)
   rental_type: RentalType
-
-  @IsNotEmpty()
-  amount: number
 }

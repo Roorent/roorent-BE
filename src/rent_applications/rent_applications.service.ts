@@ -54,24 +54,34 @@ export class RentApplicationsService {
       const findOneUser = await this.userService.findOne(userId)
       const findOneProduct: any = await this.productsService.findOneById(id)
 
+      const startDate = new Date(payload.lease_start)
+      const endDate = new Date(payload.lease_expiration)
+      let amount: number
+
+      if (payload.rental_type === 'bulanan') {
+        amount = endDate.getMonth() - startDate.getMonth()
+      } else if (payload.rental_type === 'harian') {
+        amount = (endDate.getTime() - startDate.getTime()) / 86400000
+      }
+
       let rentApp: any = {}
       if (payload.rental_type === 'harian') {
         rentApp.price = findOneProduct.daily_price
-        rentApp.total_price = findOneProduct.daily_price * payload.amount
+        rentApp.total_price = findOneProduct.daily_price * amount
       }
       if (payload.rental_type === 'bulanan') {
         rentApp.price = findOneProduct.monthly_price
-        rentApp.total_price = findOneProduct.monthly_price * payload.amount
+        rentApp.total_price = findOneProduct.monthly_price * amount
       }
 
       let adminFee: any
-      if (findOneProduct.type === 'Kos') {
+      if (findOneProduct.type === 'kost') {
         adminFee = FEE.kos
       }
-      if (findOneProduct.type === 'Hotel') {
+      if (findOneProduct.type === 'hotel') {
         adminFee = FEE.hotel
       }
-      if (findOneProduct.type === 'Gedung') {
+      if (findOneProduct.type === 'gedung') {
         adminFee = FEE.gedung
       }
 
