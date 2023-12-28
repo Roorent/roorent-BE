@@ -138,7 +138,13 @@ export class AuthService {
 
         return { access_token: await this.jwtService.sign(datas) }
       } else {
-        return 'Akun anda tidak aktif, silahkan hubungi admin'
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'Akun anda tidak aktif, silahkan hubungi admin',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
       }
     } catch (err) {
       throw err
