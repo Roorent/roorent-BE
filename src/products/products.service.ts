@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Products, ProductsType } from './enitities/products.entity'
-import { Like, EntityNotFoundError, Repository } from 'typeorm'
+import { ILike, EntityNotFoundError, Repository } from 'typeorm'
 import { UsersService } from '#/users/users.service'
 import { CreateProductsDTO } from './dto/create-products.dto'
 import { CitiesService } from '#/cities/cities.service'
@@ -28,10 +28,9 @@ export class ProductsService {
     private photoProductsRepository: Repository<PhotoProducts>,
   ) {}
 
-  findAllKos(page: number = 1, limit: number = 10) {
+  findAll(page: number = 1, limit: number = 10) {
     return this.productsRepository.findAndCount({
       where: {
-        type: ProductsType.KOS,
         active_status: true,
       },
       skip: --page * limit,
@@ -175,10 +174,9 @@ export class ProductsService {
         insertProductDescriptions.identifiers[0].id
       productsEntity.specialRules = insertSpecialRules.identifiers[0].id
       const insertProduct = await this.productsRepository.insert(productsEntity)
-
-      const photoProductsEntity = new PhotoProducts()
-
+      
       payload.photo.forEach(async (item) => {
+        const photoProductsEntity = new PhotoProducts()
         photoProductsEntity.photo = item
         photoProductsEntity.products = insertProduct.identifiers[0].id
         await this.photoProductsRepository.insert(photoProductsEntity)
@@ -287,12 +285,14 @@ export class ProductsService {
 
       const productDescId = await allProducts.productDescriptions.id
       const specialRulesId = await allProducts.specialRules.id
-      const photoProductsId = await allProducts.photoProducts[0].id
+      const photoProducts = await allProducts.photoProducts
 
       await this.productsRepository.softDelete(id)
       await this.productDescriptionsRepository.softDelete(productDescId)
       await this.specialRulesRepository.softDelete(specialRulesId)
-      await this.photoProductsRepository.softDelete(photoProductsId)
+      for (const photoProduct of  photoProducts) {
+        await this.photoProductsRepository.softDelete(photoProduct.id);
+      }
 
       return 'Success'
     } catch (err) {
@@ -371,10 +371,20 @@ export class ProductsService {
   ) {
     const [data, count] = await this.productsRepository.findAndCount({
       where: [
-        { name: Like(`%${searchCriteria}%`) },
-        { type: Like(`%${searchCriteria}%`) },
-        { address: Like(`%${searchCriteria}%`) },
+        { name: ILike(`%${searchCriteria}%`) },
+        { address: ILike(`%${searchCriteria}%`) },
+        {
+          cities: {
+            name: ILike(`%${searchCriteria}%`),
+          },
+        },
       ],
+      relations: {
+        cities: true,
+        productDescriptions: true,
+        specialRules: true,
+        photoProducts: true,
+      },
       take: limit,
       skip: (page - 1) * limit,
     })

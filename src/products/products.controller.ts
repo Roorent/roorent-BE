@@ -24,9 +24,9 @@ export class ProductsController {
     private productsService: ProductsService, // private photoProductsService: PhotoProductsService
   ) {}
 
-  @Get('all-kos')
-  async getAllKos(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.productsService.findAllKos(page, limit)
+  @Get('all')
+  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.productsService.findAll(page, limit)
 
     return {
       statusCode: HttpStatusCode.Ok,
