@@ -19,19 +19,19 @@ export class Banks {
 
   @Column({
     type: 'varchar',
-    nullable: false,
+    length: 50,
   })
   bank_name: string
 
   @Column({
     type: 'varchar',
-    nullable: false,
+    length: 120,
   })
   acc_name: string
 
   @Column({
-    type: 'varchar',
-    nullable: false,
+    type: 'char',
+    length: 20,
   })
   acc_number: string
 

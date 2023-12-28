@@ -209,11 +209,13 @@ export class TransactionsService {
   ) {
     try {
       const findOneUserId = await this.userService.findOne(userId)
+      const [users, count] = await this.userService.findAll()
+      const userAdmin = users.filter((user) => user.level.name === 'admin')
 
       const findOneRentApplicationsId: any =
         await this.rentApplicationsService.findOneById(id)
-      const findOneBankId: any = await this.bankService.findOneById(
-        payload.bank_id,
+      const findOneBankId = await this.bankService.findOneByUser(
+        userAdmin[0].id,
       )
 
       const expiredTime = Date.now() + 60 * 60 * 1000 * 3
@@ -235,6 +237,7 @@ export class TransactionsService {
           id: insertRentApplications.identifiers[0].id,
         },
         relations: {
+          user: true,
           banks: true,
           rentApplications: { product: true },
         },

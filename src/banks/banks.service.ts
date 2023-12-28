@@ -47,19 +47,12 @@ export class BanksService {
 
   async findOneByUser(id: any) {
     try {
-      const [data, count] = await this.banksRepository.findAndCount({
+      const data = await this.banksRepository.findOneOrFail({
         where: { user: { id } },
         relations: ['user'],
       })
 
-      const datas = data.map((item: any) => ({
-        id: item.id,
-        bank_name: item.bank_name,
-        acc_name: item.acc_name,
-        acc_number: item.acc_number,
-      }))
-
-      return datas
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         throw new HttpException(
