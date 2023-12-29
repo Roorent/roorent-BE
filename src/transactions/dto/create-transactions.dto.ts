@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator'
 
 export class CreateTransactionsDTO {
-  bank_id: string
+  bank_id: any
 
   rent_application_id: string
 

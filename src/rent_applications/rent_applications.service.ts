@@ -7,6 +7,7 @@ import { UsersService } from '#/users/users.service'
 import { CreateRentApplicationsDTO } from './dto/create-rent_applications.dto'
 import { UpdateRentApplicationsDTO } from './dto/update-rent_applications.dto'
 import { FEE } from '#/constant'
+import { BanksService } from '#/banks/banks.service'
 
 @Injectable()
 export class RentApplicationsService {
@@ -15,6 +16,7 @@ export class RentApplicationsService {
     private rentApplicationsRepository: Repository<RentApplications>,
     private userService: UsersService,
     private productsService: ProductsService,
+    private bankService: BanksService,
   ) {}
 
   findAll(page: number = 1, limit: number = 10) {
@@ -30,13 +32,53 @@ export class RentApplicationsService {
 
   async findOneById(id: string) {
     try {
-      return await this.rentApplicationsRepository.findOneOrFail({
+      const rentApp = await this.rentApplicationsRepository.findOneOrFail({
         where: { id },
         relations: {
-          user: true,
-          product: true,
+          user: { biodata: true },
+          product: {
+            specialRules: true,
+            productDescriptions: true,
+            user: true,
+            photoProducts: true,
+          },
         },
       })
+
+      const [users, count] = await this.userService.findAll()
+      const userAdmin = users.filter((user) => user.level.name === 'admin')
+
+      const bankAdmin = await this.bankService.findOneByUser(userAdmin[0].id)
+
+      const data = {
+        id: rentApp.id,
+        lease_start: rentApp.lease_start,
+        lease_expiration: rentApp.lease_expiration,
+        rental_type: rentApp.rental_type,
+        amount: rentApp.amount,
+        fee: rentApp.fee,
+        price: rentApp.price,
+        total_price: rentApp.total_price,
+        user_name:
+          rentApp.user.biodata.first_name +
+          ' ' +
+          rentApp.user.biodata.last_name,
+        user_nik: rentApp.user.biodata.nik,
+        user_hp: rentApp.user.biodata.phone,
+        user_gender: rentApp.user.biodata.gender,
+        user_birthday: rentApp.user.biodata.birth_date,
+        user_address: rentApp.user.biodata.address,
+        product_id: rentApp.product.id,
+        product_name: rentApp.product.name,
+        product_photo: rentApp.product.photoProducts[0].photo,
+        product_type: rentApp.product.type,
+        product_label: rentApp.product.specialRules.gender,
+        product_desc: rentApp.product.productDescriptions.descriptions,
+        product_address: rentApp.product.address,
+        adm_bank: bankAdmin,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -91,6 +133,7 @@ export class RentApplicationsService {
       rentApplicationsEntity.rental_type = payload.rental_type
       rentApplicationsEntity.price = rentApp.price
       rentApplicationsEntity.total_price = rentApp.total_price
+      rentApplicationsEntity.amount = amount
       rentApplicationsEntity.fee = adminFee
       rentApplicationsEntity.user = findOneUser
       rentApplicationsEntity.product = findOneProduct

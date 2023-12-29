@@ -1,7 +1,16 @@
-import { Products } from "#/products/enitities/products.entity";
-import { Transactions } from "#/transactions/entities/transactions.entity";
-import { Users } from "#/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Products } from '#/products/enitities/products.entity'
+import { Transactions } from '#/transactions/entities/transactions.entity'
+import { Users } from '#/users/entities/user.entity'
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 
 export enum RentalType {
   DAILY = 'harian',
@@ -26,21 +35,9 @@ export class RentApplications {
 
   @Column({
     type: 'enum',
-    enum: RentalType
+    enum: RentalType,
   })
   rental_type: RentalType
-
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  price: number
-
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  total_price: number
 
   @Column({
     type: 'int',
@@ -52,7 +49,19 @@ export class RentApplications {
     type: 'int',
     nullable: true,
   })
-  fee: Number 
+  price: number
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  total_price: number;
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  fee: Number
 
   @CreateDateColumn({
     type: 'timestamp with time zone',
@@ -78,6 +87,9 @@ export class RentApplications {
   @ManyToOne(() => Users, (user) => user.rentApplications)
   user: Users
 
-  @OneToMany(() => Transactions, (transactions) => transactions.rentApplications)
+  @OneToMany(
+    () => Transactions,
+    (transactions) => transactions.rentApplications,
+  )
   transactions: Transactions
 }
