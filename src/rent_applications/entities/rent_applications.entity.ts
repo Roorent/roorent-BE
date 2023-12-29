@@ -50,12 +50,6 @@ export class RentApplications {
     nullable: true,
   })
   price: number
- 
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  amount: number
 
   @Column({
     type: 'int',
