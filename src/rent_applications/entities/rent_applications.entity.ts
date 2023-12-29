@@ -46,6 +46,12 @@ export class RentApplications {
     type: 'int',
     nullable: true,
   })
+  amount: number
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
   fee: Number 
 
   @CreateDateColumn({

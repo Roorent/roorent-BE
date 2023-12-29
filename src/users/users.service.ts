@@ -21,6 +21,17 @@ export class UsersService {
     private biodatasRepository: Repository<Biodatas>,
   ) {}
 
+  findAllUsers(page: number = 1 , limit: number = 10){
+    return this.usersRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        level:true,
+        biodata:true
+      }
+    });
+  }
+
   async findUsersByLevel(role: string) {
     try {
       if (!['owner', 'renter'].includes(role)) {

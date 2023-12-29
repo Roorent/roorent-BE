@@ -21,6 +21,19 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('all-users')
+  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.usersService.findAllUsers(page, limit);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      count,
+      data,
+    };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(
     @Query('role') role?: string,
