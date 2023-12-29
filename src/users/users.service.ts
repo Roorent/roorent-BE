@@ -36,7 +36,7 @@ export class UsersService {
 
       const count = await this.usersRepository
         .createQueryBuilder('user')
-        .leftJoin('user.level', 'level')
+        .leftJoin('user.level', 'level') 
         .where('level.name = :role', { role })
         .getCount()
 
