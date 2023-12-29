@@ -59,6 +59,7 @@ export class RentApplicationsService {
         fee: rentApp.fee,
         price: rentApp.price,
         total_price: rentApp.total_price,
+        createdAt: rentApp.createdAt,
         user_name:
           rentApp.user.biodata.first_name +
           ' ' +
