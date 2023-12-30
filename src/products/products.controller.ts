@@ -25,8 +25,8 @@ export class ProductsController {
   ) {}
 
   @Get('all')
-  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.productsService.findAll(page, limit)
+  async getAll() {
+    const [data, count] = await this.productsService.findAll()
 
     return {
       statusCode: HttpStatusCode.Ok,

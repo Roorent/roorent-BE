@@ -28,13 +28,13 @@ export class ProductsService {
     private photoProductsRepository: Repository<PhotoProducts>,
   ) {}
 
-  findAll(page: number = 1, limit: number = 10) {
+  findAll() {
     return this.productsRepository.findAndCount({
       where: {
         active_status: true,
       },
-      skip: --page * limit,
-      take: limit,
+      // skip: --page * limit,
+      // take: limit,
       relations: {
         user: true,
         cities: true,
