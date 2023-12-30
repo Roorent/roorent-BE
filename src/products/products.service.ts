@@ -174,7 +174,7 @@ export class ProductsService {
         insertProductDescriptions.identifiers[0].id
       productsEntity.specialRules = insertSpecialRules.identifiers[0].id
       const insertProduct = await this.productsRepository.insert(productsEntity)
-      
+
       payload.photo.forEach(async (item) => {
         const photoProductsEntity = new PhotoProducts()
         photoProductsEntity.photo = item
@@ -199,7 +199,7 @@ export class ProductsService {
     }
   }
 
-  async update(id: string, payload: UpdateProductsDTO) {
+  async update(id: any, payload: UpdateProductsDTO) {
     try {
       const allProducts = await this.productsRepository.findOneOrFail({
         where: { id },
@@ -214,7 +214,6 @@ export class ProductsService {
 
       const productDescId = allProducts.productDescriptions.id
       const specialRulesId = allProducts.specialRules.id
-      const productsId: any = allProducts.id
 
       const dataProductDesc = {
         specifications: payload.specifications,
@@ -244,19 +243,17 @@ export class ProductsService {
       )
       await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
 
-      await this.photoProductsRepository.delete({ products: productsId })
-
+      
       payload.photo.map(async (value) => {
+        await this.photoProductsRepository.delete({ products: id })
         const photoProductsEntity = new PhotoProducts()
-        photoProductsEntity.products = productsId
+        photoProductsEntity.products = id
         photoProductsEntity.photo = value
         await this.photoProductsRepository.insert(photoProductsEntity)
       })
 
       return await this.productsRepository.findOneOrFail({
         relations: {
-          user: true,
-          cities: true,
           productDescriptions: true,
           specialRules: true,
           photoProducts: true,
@@ -290,8 +287,8 @@ export class ProductsService {
       await this.productsRepository.softDelete(id)
       await this.productDescriptionsRepository.softDelete(productDescId)
       await this.specialRulesRepository.softDelete(specialRulesId)
-      for (const photoProduct of  photoProducts) {
-        await this.photoProductsRepository.softDelete(photoProduct.id);
+      for (const photoProduct of photoProducts) {
+        await this.photoProductsRepository.softDelete(photoProduct.id)
       }
 
       return 'Success'
