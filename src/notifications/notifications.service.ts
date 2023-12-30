@@ -1,7 +1,7 @@
 import { UsersService } from '#/users/users.service'
-import { Injectable } from '@nestjs/common'
+import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { EntityNotFoundError, Repository } from 'typeorm'
 import { Notifications } from './entities/notification.entity'
 import { CreateNotifDTO } from './dto/create-notif.dto'
 
@@ -56,7 +56,14 @@ export class NotificationsService {
 
       return data
     } catch (err) {
-      throw err
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
     }
   }
 
