@@ -14,6 +14,7 @@ import { UpdateTransactionsDTO } from './dto/update-transactions.dto'
 import { approveRejectDTO } from './dto/approveReject.dto'
 import puppeteer from 'puppeteer'
 import { NotificationsService } from '#/notifications/notifications.service'
+import { generatePaymentNumber } from '#/utils/generate'
 
 @Injectable()
 export class TransactionsService {
@@ -132,17 +133,24 @@ export class TransactionsService {
 
   async getDetailRenterById(id: string) {
     try {
-      return await this.transactionsRepository.findOneOrFail({
-        where: {
-          transaction_type: TransactionType.RENTER,
-          id,
-        },
-        relations: {
-          user: true,
-          banks: true,
-          rentApplications: { product: true },
-        },
-      })
+      const transactionRenterByRentApp =
+        await this.transactionsRepository.findOneOrFail({
+          where: {
+            transaction_type: TransactionType.RENTER,
+            rentApplications: { id },
+          },
+        })
+
+      const data = {
+        id: transactionRenterByRentApp.id,
+        payment_code: transactionRenterByRentApp.payment_code,
+        payment_status: transactionRenterByRentApp.payment_status,
+        transaction_proof: transactionRenterByRentApp.transaction_proof,
+        transaction_type: transactionRenterByRentApp.transaction_type,
+        reason: transactionRenterByRentApp.reason,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -219,6 +227,7 @@ export class TransactionsService {
       const expiredTime = Date.now() + 60 * 60 * 1000 * 3
 
       const transactionsEntity = new Transactions()
+      transactionsEntity.payment_code = generatePaymentNumber()
       transactionsEntity.expired_payment = expiredTime.toString()
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.RENTER
@@ -261,6 +270,7 @@ export class TransactionsService {
       const expiredTime = Date.now() + 60 * 60 * 1000 * 3
 
       const transactionsEntity = new Transactions()
+      transactionsEntity.payment_code = generatePaymentNumber()
       transactionsEntity.expired_payment = expiredTime.toString()
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.OWNER
