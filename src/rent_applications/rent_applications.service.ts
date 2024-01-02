@@ -102,9 +102,12 @@ export class RentApplicationsService {
       let amount: number
 
       if (payload.rental_type === 'bulanan') {
-        amount = endDate.getMonth() - startDate.getMonth()
+        amount =
+          (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+          (endDate.getMonth() - startDate.getMonth())
       } else if (payload.rental_type === 'harian') {
-        amount = (endDate.getTime() - startDate.getTime()) / 86400000
+        amount =
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
       }
 
       let rentApp: any = {}

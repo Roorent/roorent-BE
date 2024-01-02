@@ -1,14 +1,14 @@
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 
 export class CreateTransactionsDTO {
-  bank_id: any
-
   rent_application_id: string
 
-  transaction_deadline: Number
+  @IsOptional()
+  bank_id: any
 
   @IsNotEmpty()
   transaction_proof: string
 
+  transaction_deadline: Number
   reason: string
 }

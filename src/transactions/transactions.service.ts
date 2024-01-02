@@ -220,9 +220,6 @@ export class TransactionsService {
 
       const findOneRentApplicationsId: any =
         await this.rentApplicationsService.findOneById(id)
-      const findOneBankId: any = await this.bankService.findOneById(
-        payload.bank_id,
-      )
 
       const expiredTime = Date.now() + 60 * 60 * 1000 * 3
 
@@ -232,7 +229,7 @@ export class TransactionsService {
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.RENTER
       transactionsEntity.user = findOneUserId
-      transactionsEntity.banks = findOneBankId
+      transactionsEntity.banks = payload.bank_id
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
       const insertRentApplications = await this.transactionsRepository.insert(
