@@ -23,14 +23,14 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @Get('all-users')
   async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.usersService.findAllUsers(page, limit);
+    const [data, count] = await this.usersService.findAllUsers(page, limit)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
       count,
       data,
-    };
+    }
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -68,9 +68,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/nonactive/:id')
-  async getNonactive(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  async getNonactive(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.usersService.getNonactive(id)
     return {
       statusCode: HttpStatus.OK,
@@ -94,12 +92,12 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get(':id')
+  @Get('/byId/:id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
-      data: await this.usersService.findOne(id),
+      data: await this.usersService.findOwnerOne(id),
     }
   }
 
@@ -129,9 +127,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('approve/:id')
-  async approve(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  async approve(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.usersService.approveOwner(id)
     return {
       statusCode: HttpStatus.OK,

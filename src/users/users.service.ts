@@ -21,15 +21,15 @@ export class UsersService {
     private biodatasRepository: Repository<Biodatas>,
   ) {}
 
-  findAllUsers(page: number = 1 , limit: number = 10){
+  findAllUsers(page: number = 1, limit: number = 10) {
     return this.usersRepository.findAndCount({
       skip: --page * limit,
       take: limit,
       relations: {
-        level:true,
-        biodata:true
-      }
-    });
+        level: true,
+        biodata: true,
+      },
+    })
   }
 
   async findUsersByLevel(role: string) {
@@ -47,7 +47,7 @@ export class UsersService {
 
       const count = await this.usersRepository
         .createQueryBuilder('user')
-        .leftJoin('user.level', 'level') 
+        .leftJoin('user.level', 'level')
         .where('level.name = :role', { role })
         .getCount()
 
@@ -122,6 +122,48 @@ export class UsersService {
     }
   }
 
+  async findOwnerOne(id: string) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          level: true,
+          biodata: true,
+        },
+      })
+
+      const data = {
+        id: user.id,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        nik: user.biodata.nik,
+        phone: user.biodata.phone,
+        address: user.biodata.address,
+        birthday: user.biodata.birth_date,
+        gender: user.biodata.gender,
+        status: user.biodata.isActive,
+        photo: user.biodata.photo_profile,
+        ktp: user.biodata.photo_ktp,
+      }
+
+      return data
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } else {
+        throw err
+      }
+    }
+  }
+
   async update(id: string, payload: UpdateUserDto) {
     try {
       await this.usersRepository.findOneOrFail({
@@ -176,8 +218,7 @@ export class UsersService {
     await this.usersRepository.softDelete(id)
   }
 
-  async getNonactive(id: string
-    ) {
+  async getNonactive(id: string) {
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
@@ -247,24 +288,29 @@ export class UsersService {
         )
       }
 
-      const existingUser:any = await this.usersRepository.findOne({ 
-        where: {biodata: {first_name: payload.first_name, last_name: payload.last_name}} 
-      });
-
-    if (existingUser) {
-      const biodataId = user.biodata.id
-      const biodatasEntity = new Biodatas()
-      biodatasEntity.isActive = StatusUsers.ACTIVE
-      await this.biodatasRepository.update(biodataId, biodatasEntity)
-    } else {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          error: 'first name and last name is invalid',
+      const existingUser: any = await this.usersRepository.findOne({
+        where: {
+          biodata: {
+            first_name: payload.first_name,
+            last_name: payload.last_name,
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      )
-    }
+      })
+
+      if (existingUser) {
+        const biodataId = user.biodata.id
+        const biodatasEntity = new Biodatas()
+        biodatasEntity.isActive = StatusUsers.ACTIVE
+        await this.biodatasRepository.update(biodataId, biodatasEntity)
+      } else {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'first name and last name is invalid',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
+      }
 
       return await this.biodatasRepository.findOneOrFail({
         where: { user: { id } },
@@ -306,7 +352,7 @@ export class UsersService {
     }
   }
 
-  async rejectOwner(id: string, reason: any){
+  async rejectOwner(id: string, reason: any) {
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
