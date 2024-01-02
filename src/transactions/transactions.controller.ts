@@ -47,7 +47,7 @@ export class TransactionsController {
     }
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Get('photo_transactions/:type/:filename')
   getProfileImage(
     @Param('type') type: string,
@@ -122,16 +122,16 @@ export class TransactionsController {
     @Query('page') page: number,
     @Query('limit') limit: number,
   ) {
-    const [data, count] = await this.transactionService.listAllRenter(
+    const { count, transactionsData } = await this.transactionService.listAllRenter(
       page,
       limit,
-    )
+    );
 
     return {
       statusCode: HttpStatusCode.Ok,
       message: 'success',
       count,
-      data,
+      transactionsData
     }
   }
 

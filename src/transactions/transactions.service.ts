@@ -54,19 +54,35 @@ export class TransactionsService {
     })
   }
 
-  listAllRenter(page: number = 1, limit: number = 10) {
-    return this.transactionsRepository.findAndCount({
+  async listAllRenter(page: number = 1, limit: number = 10) {
+    const [data, count] = await this.transactionsRepository.findAndCount({
       where: {
         transaction_type: TransactionType.RENTER,
+        payment_status: PaymentStatus.PENDING,
       },
       skip: --page * limit,
       take: limit,
       relations: {
-        user: true,
-        banks: true,
+        user: {biodata: true},
         rentApplications: { product: true },
       },
     })
+    
+    const transactionsData = data.map((item) => ({
+      id: item.id,
+      trans_proof: item.transaction_proof,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      product_name: item.rentApplications.product.name,
+      price: item.rentApplications.price,
+      amount: item.rentApplications.amount,
+      total_price:item.rentApplications.total_price,
+      createdAt: item.createdAt,
+    }))
+
+    return {
+      count,
+      transactionsData
+    };
   }
 
   async listTransactionsByRenter(id: string) {
