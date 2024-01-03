@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { EntityNotFoundError, Repository } from 'typeorm'
+import { EntityNotFoundError, ILike, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Biodatas, StatusUsers } from '#/biodatas/entities/biodatas.entity'
@@ -21,8 +21,8 @@ export class UsersService {
     private biodatasRepository: Repository<Biodatas>,
   ) {}
 
-  findAllUsers(page: number = 1, limit: number = 10) {
-    return this.usersRepository.findAndCount({
+  async findAllUsers(page: number = 1, limit: number = 10) {
+    const [data,count] = await this.usersRepository.findAndCount({
       skip: --page * limit,
       take: limit,
       relations: {
@@ -30,6 +30,49 @@ export class UsersService {
         biodata: true,
       },
     })
+
+    const userData = data.map((item) =>({
+      id: item.id,
+      user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
+      role: item.level.name,
+      photo_profile: item.biodata.photo_profile,
+      isActive: item.biodata.isActive
+    }))
+
+    return {
+      count,
+      userData
+    }
+  }
+
+  async searchUsers(
+    searchCriteria: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const [data, count] = await this.usersRepository.findAndCount({
+      where: [
+        {
+          biodata: {
+            first_name: ILike(`%${searchCriteria}%`),
+            // last_name: ILike(`%${searchCriteria}%`),
+          },
+        },
+      ],
+      relations: {
+        level: true,
+        biodata: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    })
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
+    }
   }
 
   async findUsersByLevel(role: string) {

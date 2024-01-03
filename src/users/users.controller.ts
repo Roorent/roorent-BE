@@ -23,14 +23,27 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @Get('all-users')
   async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.usersService.findAllUsers(page, limit)
+    const {count, userData} = await this.usersService.findAllUsers(page, limit)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
       count,
-      data,
+      userData,
     }
+  }
+
+  @Get('/search')
+  async listProductsWithSearch(
+    @Query('s') searchCriteria: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.usersService.searchUsers(
+      searchCriteria,
+      page,
+      limit,
+    )
   }
 
   @UseGuards(AuthGuard('jwt'))
