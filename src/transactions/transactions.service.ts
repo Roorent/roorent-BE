@@ -85,12 +85,39 @@ export class TransactionsService {
     };
   }
 
-  async listTransactionsByRenter(id: string) {
+  async listTransactionsByRenter(id: string, page: number = 1, limit: number = 90) {
     try {
-      const renter = await this.userService.findOne(id)
-      return await this.transactionsRepository.findOneOrFail({
-        where: { user: { id: renter.id } },
+      let [data, count] = await this.transactionsRepository.findAndCount({
+        where: { user: { id: id }},
+        relations: {
+          user: {biodata: true},
+          rentApplications: {product: {specialRules: true, photoProducts: true}}
+        },
+        skip: --page * limit,
+        take: limit,
       })
+
+      const transactionsData = data.map((item) => ({
+        id: item.id,
+        payment_code: item.payment_code,
+        payment_status: item.payment_status,
+        product_name: item.rentApplications.product.name,
+        product_address: item.rentApplications.product.address,
+        product_type: item.rentApplications.product.type,
+        product_gender: item.rentApplications.product.specialRules.gender,
+        product_photo: item.rentApplications.product.photoProducts[0]?.photo,
+        user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+        price: item.rentApplications.price,
+        amount: item.rentApplications.amount,
+        total_price:item.rentApplications.total_price,
+        createdAt: item.createdAt,
+      }))
+
+      return {
+        count,
+        transactionsData
+      };
+      
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -206,14 +233,36 @@ export class TransactionsService {
 
   async findOneById(id: string) {
     try {
-      return await this.transactionsRepository.findOneOrFail({
+      const transactionsId = await this.transactionsRepository.findOneOrFail({
         where: { id },
         relations: {
-          user: true,
+          user: {biodata: true},
           banks: true,
-          rentApplications: { product: true },
+          rentApplications: {product: {specialRules: true, photoProducts: true}}
         },
       })
+
+      const data = {
+        id: transactionsId.id,
+        payment_code: transactionsId.payment_code,
+        payment_status: transactionsId.payment_status,
+        product_id: transactionsId.rentApplications.product.id,
+        product_name: transactionsId.rentApplications.product.name,
+        product_address: transactionsId.rentApplications.product.address,
+        product_type: transactionsId.rentApplications.product.type,
+        product_gender: transactionsId.rentApplications.product.specialRules.gender,
+        product_photo: transactionsId.rentApplications.product.photoProducts[0]?.photo,
+        user_name: transactionsId.user.biodata.first_name + ' ' + transactionsId.user.biodata.last_name,
+        price: transactionsId.rentApplications.price,
+        amount: transactionsId.rentApplications.amount,
+        lease_start: transactionsId.rentApplications.lease_start,
+        lease_expiration: transactionsId.rentApplications.lease_expiration,
+        rental_type: transactionsId.rentApplications.rental_type,
+        total_price:transactionsId.rentApplications.total_price,
+        createdAt: transactionsId.createdAt,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {

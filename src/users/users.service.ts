@@ -53,10 +53,10 @@ export class UsersService {
     const [data, count] = await this.usersRepository.findAndCount({
       where: [
         {
-          biodata: {
-            first_name: ILike(`%${searchCriteria}%`),
-            // last_name: ILike(`%${searchCriteria}%`),
-          },
+          biodata: [
+            { first_name: ILike(`%${searchCriteria}%`) },
+            { last_name: ILike(`%${searchCriteria}%`) },
+          ],
         },
       ],
       relations: {

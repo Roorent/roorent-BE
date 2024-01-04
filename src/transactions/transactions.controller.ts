@@ -237,13 +237,18 @@ export class TransactionsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list-renter/:id')
-  async getTransactionsByRenter(@Param('id', ParseUUIDPipe) id: string) {
-    const data = await this.transactionService.listTransactionsByRenter(id)
+  async getTransactionsByRenter(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    ) {
+    const{ count, transactionsData }: any = await this.transactionService.listTransactionsByRenter(id,page,limit)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-      data,
+      count,
+      transactionsData,
     }
   }
 
