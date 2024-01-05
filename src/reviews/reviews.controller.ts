@@ -24,7 +24,21 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.reviewService.findAll(page, limit)
+    // erorr dikit
+    const [count, reviewsData]:any = await this.reviewService.findAll(page, limit)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      reviewsData,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('findAllByBadRating')
+  async findAllByBadRating(@Query('page') page: number, @Query('limit') limit: number) {
+    const [data, count] = await this.reviewService.findAllByBadRating(page, limit)
 
     return {
       statusCode: HttpStatus.OK,

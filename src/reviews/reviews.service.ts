@@ -25,6 +25,36 @@ export class ReviewsService {
   ) {}
 
   async findAll(page: number = 1, limit: number = 10) {
+    const [data, count] = await this.reviewsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        user: {biodata: true},
+        product: true,
+        transactions: true,
+        photoReviews: true,
+      },
+    })
+
+    const reviewsData = data.map((item) => ({
+      id: item.id,
+      rating: item.rating,
+      content: item.content,
+      // photo1: item.photoReviews[0]?.photo,
+      // photo2: item.photoReviews[1]?.photo,
+      // photo3: item.photoReviews[2]?.photo,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      // transactions: item.transactions,
+      createdAt: item.createdAt
+    }))
+
+    return {
+      count,
+      reviewsData,
+    }
+  }
+
+  async findAllByBadRating(page: number = 1, limit: number = 10) {
     const sorter = 'ASC' // 'ASC' or 'DESC'
 
     const data = await this.reviewsRepository.findAndCount({
@@ -81,8 +111,8 @@ export class ReviewsService {
 
       const insertReviews = await this.reviewsRepository.insert(reviewEntity)
 
-      const photoReviewsEntity = new PhotoReviews()
       payload.photo.forEach(async (item) => {
+        const photoReviewsEntity = new PhotoReviews()
         photoReviewsEntity.photo = item 
         photoReviewsEntity.reviews = insertReviews.identifiers[0].id
         await this.photoReviewsRepository.insert(
@@ -100,7 +130,7 @@ export class ReviewsService {
       //   relations: { reviews: true },
       // })
       return (
-        this.findAll()
+        this.findAllByBadRating()
       )
     } catch (err) {
       throw err

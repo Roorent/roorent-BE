@@ -239,10 +239,11 @@ export class TransactionsController {
   @Get('/list-renter/:id')
   async getTransactionsByRenter(
     @Param('id', ParseUUIDPipe) id: string,
+    @Query('status') status: string,
     @Query('page') page: number,
     @Query('limit') limit: number,
     ) {
-    const{ count, transactionsData }: any = await this.transactionService.listTransactionsByRenter(id,page,limit)
+    const{ count, transactionsData }: any = await this.transactionService.listTransactionsByRenter(id, status, page,limit)
 
     return {
       statusCode: HttpStatus.OK,

@@ -350,17 +350,17 @@ export class ProductsService {
   }
 
   async listProductsWithSearch(
-    searchCriteria: string,
+    search: string,
     page: number = 1,
     limit: number = 10,
   ) {
     const [data, count] = await this.productsRepository.findAndCount({
       where: [
-        { name: ILike(`%${searchCriteria}%`) },
-        { address: ILike(`%${searchCriteria}%`) },
+        { name: ILike(`%${search}%`) },
+        { address: ILike(`%${search}%`) },
         {
           cities: {
-            name: ILike(`%${searchCriteria}%`),
+            name: ILike(`%${search}%`),
           },
         },
       ],

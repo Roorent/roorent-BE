@@ -85,10 +85,10 @@ export class TransactionsService {
     };
   }
 
-  async listTransactionsByRenter(id: string, page: number = 1, limit: number = 90) {
+  async listTransactionsByRenter(id: string, status: any, page: number = 1, limit: number = 90) {
     try {
       let [data, count] = await this.transactionsRepository.findAndCount({
-        where: { user: { id: id }},
+        where: { user: { id: id }, payment_status: status},
         relations: {
           user: {biodata: true},
           rentApplications: {product: {specialRules: true, photoProducts: true}}

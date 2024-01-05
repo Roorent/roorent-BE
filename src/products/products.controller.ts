@@ -148,12 +148,12 @@ export class ProductsController {
 
   @Get('/search')
   async listProductsWithSearch(
-    @Query('s') searchCriteria: string,
+    @Query('q') search: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
     return this.productsService.listProductsWithSearch(
-      searchCriteria,
+      search,
       page,
       limit,
     )
