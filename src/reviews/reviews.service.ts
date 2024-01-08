@@ -24,25 +24,24 @@ export class ReviewsService {
     private productService: ProductsService,
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10) {
-    const [data, count] = await this.reviewsRepository.findAndCount({
+  async findAllreviews(page: number = 1, limit: number = 10) {
+    const [data,count] = await this.reviewsRepository.findAndCount({
       skip: --page * limit,
       take: limit,
       relations: {
         user: {biodata: true},
-        product: true,
-        transactions: true,
         photoReviews: true,
+        transactions: true,
       },
     })
 
-    const reviewsData = data.map((item) => ({
+    const reviewsData = data.map((item) =>({
       id: item.id,
       rating: item.rating,
       content: item.content,
-      // photo1: item.photoReviews[0]?.photo,
-      // photo2: item.photoReviews[1]?.photo,
-      // photo3: item.photoReviews[2]?.photo,
+      photo1: item.photoReviews[0]?.photo,
+      photo2: item.photoReviews[1]?.photo,
+      photo3: item.photoReviews[2]?.photo,
       user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
       // transactions: item.transactions,
       createdAt: item.createdAt
@@ -50,7 +49,7 @@ export class ReviewsService {
 
     return {
       count,
-      reviewsData,
+      reviewsData
     }
   }
 
@@ -172,9 +171,19 @@ export class ReviewsService {
       order: {
         rating: `${sorter}`,
       },
-      relations: ['user', 'product'],
+      relations: ['user.biodata', 'product', 'photoReviews', 'transactions'],
     })
 
-    return [data, count]
+    const reviewsData = data.map((item) =>({
+      id: item.id,
+      rating: item.rating,
+      content: item.content,
+      photo: item.photoReviews,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      // transactions: item.transactions,
+      createdAt: item.createdAt
+    }))
+
+    return [reviewsData, count]
   }
 }

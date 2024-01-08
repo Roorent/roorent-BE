@@ -53,22 +53,24 @@ export class PhotoProductsService {
         payload.product_id,
       )
 
-      const photoProductsEntity = new PhotoProducts()
-
+      
       payload.photo.forEach(async (item) => {
+        const photoProductsEntity = new PhotoProducts()
         photoProductsEntity.photo = item
         photoProductsEntity.products = findOneProductId
         await this.photoProductsRepository.insert(photoProductsEntity)
       })
 
-      const insertPhotoProducts = await this.photoProductsRepository.insert(
-        photoProductsEntity,
-      )
-      return await this.photoProductsRepository.findOneOrFail({
-        where: {
-          id: insertPhotoProducts.identifiers[0].id,
-        },
-      })
+      // const insertPhotoProducts = await this.photoProductsRepository.insert(
+      //   photoProductsEntity,
+      // )
+      // return await this.photoProductsRepository.findOneOrFail({
+      //   where: {
+      //     id: insertPhotoProducts.identifiers[0].id,
+      //   },
+      // })
+
+      return this.findAll
     } catch (err) {
       throw err
     }

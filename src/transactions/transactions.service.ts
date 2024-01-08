@@ -454,6 +454,31 @@ export class TransactionsService {
     }
   }
 
+  async listTransactionsByProducts(id: string){
+    try {
+      let [data, count] = await this.transactionsRepository.findAndCount({
+        where: { rentApplications: { product: {id:id} }, payment_status: PaymentStatus.APPROVE, transaction_type: TransactionType.RENTER},
+        relations: {
+          user: {biodata: true},
+          rentApplications: {product: {specialRules: true, photoProducts: true}}
+        },
+      })
+      return {
+        count,
+        data
+      };
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
+  }
+
   async generatepdfTransaction() {
     const browser = await puppeteer.launch({
       args: ['--allow-file-access-from-files'],

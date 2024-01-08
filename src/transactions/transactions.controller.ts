@@ -278,4 +278,19 @@ export class TransactionsController {
       data,
     }
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/products/:id')
+  async listTransactionsByProducts(
+    @Param('id', ParseUUIDPipe) id: string,
+    ) {
+    const{ count, data }: any = await this.transactionService.listTransactionsByProducts(id)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
+    }
+  }
 }
