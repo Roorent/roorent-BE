@@ -7,10 +7,11 @@ import { UsersModule } from '#/users/users.module'
 import { BanksModule } from '#/banks/banks.module'
 import { RentApplicationsModule } from '#/rent_applications/rent_applications.module'
 import { NotificationsModule } from '#/notifications/notifications.module'
+import { Products } from '#/products/enitities/products.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Transactions]),
+    TypeOrmModule.forFeature([Transactions, Products]),
     UsersModule,
     BanksModule,
     RentApplicationsModule,

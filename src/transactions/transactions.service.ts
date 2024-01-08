@@ -15,12 +15,15 @@ import { approveRejectDTO } from './dto/approveReject.dto'
 import puppeteer from 'puppeteer'
 import { NotificationsService } from '#/notifications/notifications.service'
 import { generatePaymentNumber } from '#/utils/generate'
+import { Products } from '#/products/enitities/products.entity'
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
     private transactionsRepository: Repository<Transactions>,
+    @InjectRepository(Products)
+    private productsRepository: Repository<Products>,
     private bankService: BanksService,
     private userService: UsersService,
     private rentApplicationsService: RentApplicationsService,
@@ -63,35 +66,43 @@ export class TransactionsService {
       skip: --page * limit,
       take: limit,
       relations: {
-        user: {biodata: true},
+        user: { biodata: true },
         rentApplications: { product: true },
       },
     })
-    
+
     const transactionsData = data.map((item) => ({
       id: item.id,
       trans_proof: item.transaction_proof,
-      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      user_name:
+        item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
       product_name: item.rentApplications.product.name,
       price: item.rentApplications.price,
       amount: item.rentApplications.amount,
-      total_price:item.rentApplications.total_price,
+      total_price: item.rentApplications.total_price,
       createdAt: item.createdAt,
     }))
 
     return {
       count,
-      transactionsData
-    };
+      transactionsData,
+    }
   }
 
-  async listTransactionsByRenter(id: string, status: any, page: number = 1, limit: number = 90) {
+  async listTransactionsByRenter(
+    id: string,
+    status: any,
+    page: number = 1,
+    limit: number = 90,
+  ) {
     try {
       let [data, count] = await this.transactionsRepository.findAndCount({
-        where: { user: { id: id }, payment_status: status},
+        where: { user: { id: id }, payment_status: status },
         relations: {
-          user: {biodata: true},
-          rentApplications: {product: {specialRules: true, photoProducts: true}}
+          user: { biodata: true },
+          rentApplications: {
+            product: { specialRules: true, photoProducts: true },
+          },
         },
         skip: --page * limit,
         take: limit,
@@ -106,18 +117,18 @@ export class TransactionsService {
         product_type: item.rentApplications.product.type,
         product_gender: item.rentApplications.product.specialRules.gender,
         product_photo: item.rentApplications.product.photoProducts[0]?.photo,
-        user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+        user_name:
+          item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
         price: item.rentApplications.price,
         amount: item.rentApplications.amount,
-        total_price:item.rentApplications.total_price,
+        total_price: item.rentApplications.total_price,
         createdAt: item.createdAt,
       }))
 
       return {
         count,
-        transactionsData
-      };
-      
+        transactionsData,
+      }
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -236,9 +247,11 @@ export class TransactionsService {
       const transactionsId = await this.transactionsRepository.findOneOrFail({
         where: { id },
         relations: {
-          user: {biodata: true},
+          user: { biodata: true },
           banks: true,
-          rentApplications: {product: {specialRules: true, photoProducts: true}}
+          rentApplications: {
+            product: { specialRules: true, photoProducts: true },
+          },
         },
       })
 
@@ -250,15 +263,20 @@ export class TransactionsService {
         product_name: transactionsId.rentApplications.product.name,
         product_address: transactionsId.rentApplications.product.address,
         product_type: transactionsId.rentApplications.product.type,
-        product_gender: transactionsId.rentApplications.product.specialRules.gender,
-        product_photo: transactionsId.rentApplications.product.photoProducts[0]?.photo,
-        user_name: transactionsId.user.biodata.first_name + ' ' + transactionsId.user.biodata.last_name,
+        product_gender:
+          transactionsId.rentApplications.product.specialRules.gender,
+        product_photo:
+          transactionsId.rentApplications.product.photoProducts[0]?.photo,
+        user_name:
+          transactionsId.user.biodata.first_name +
+          ' ' +
+          transactionsId.user.biodata.last_name,
         price: transactionsId.rentApplications.price,
         amount: transactionsId.rentApplications.amount,
         lease_start: transactionsId.rentApplications.lease_start,
         lease_expiration: transactionsId.rentApplications.lease_expiration,
         rental_type: transactionsId.rentApplications.rental_type,
-        total_price:transactionsId.rentApplications.total_price,
+        total_price: transactionsId.rentApplications.total_price,
         createdAt: transactionsId.createdAt,
       }
 
@@ -389,10 +407,27 @@ export class TransactionsService {
 
   async appTransactions(id: string, payload: approveRejectDTO) {
     try {
-      await this.findOneById(id)
+      const allTransactions = await this.transactionsRepository.findOneOrFail({
+        where: { id },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: { product: true },
+        },
+      })
+
+      const productId = allTransactions.rentApplications.product.id
+
       const transactionsEntity = new Transactions()
       transactionsEntity.payment_status = payload.status
       transactionsEntity.reason = payload.reason
+
+      const productsEntity = new Products()
+      if (payload.status === 'approve') {
+        productsEntity.stock =
+          allTransactions.rentApplications.product.stock - 1
+        await this.productsRepository.update(productId, productsEntity)
+      }
       await this.transactionsRepository.update(id, transactionsEntity)
 
       const transData = await this.transactionsRepository.findOneOrFail({
@@ -454,19 +489,25 @@ export class TransactionsService {
     }
   }
 
-  async listTransactionsByProducts(id: string){
+  async listTransactionsByProducts(id: string) {
     try {
       let [data, count] = await this.transactionsRepository.findAndCount({
-        where: { rentApplications: { product: {id:id} }, payment_status: PaymentStatus.APPROVE, transaction_type: TransactionType.RENTER},
+        where: {
+          rentApplications: { product: { id: id } },
+          payment_status: PaymentStatus.APPROVE,
+          transaction_type: TransactionType.RENTER,
+        },
         relations: {
-          user: {biodata: true},
-          rentApplications: {product: {specialRules: true, photoProducts: true}}
+          user: { biodata: true },
+          rentApplications: {
+            product: { specialRules: true, photoProducts: true },
+          },
         },
       })
       return {
         count,
-        data
-      };
+        data,
+      }
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
