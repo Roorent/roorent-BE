@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Biodatas, StatusUsers } from '#/biodatas/entities/biodatas.entity'
 import { ReactiveUserDto } from './dto/reactive-user.dto'
 import * as bcrypt from 'bcrypt'
+import { Levels } from '#/levels/entities/level.entity'
 
 @Injectable()
 export class UsersService {
@@ -179,6 +180,7 @@ export class UsersService {
 
       const data = {
         id: user.id,
+        role: user.level.name,
         email: user.email,
         name: user.biodata.first_name + ' ' + user.biodata.last_name,
         nik: user.biodata.nik,
