@@ -21,7 +21,6 @@ import { AuthGuard } from '@nestjs/passport'
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get()
   async getAll(@Query('page') page: number, @Query('limit') limit: number) {
     const {count, reviewsData} = await this.reviewService.findAllreviews(page, limit)
@@ -47,7 +46,6 @@ export class ReviewsController {
     }
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.reviewService.findOne(id)
@@ -59,7 +57,6 @@ export class ReviewsController {
     }
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('/product/:id')
   async findByProduct(
     @Param('id', ParseUUIDPipe) id: string,
