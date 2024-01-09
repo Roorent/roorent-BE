@@ -81,6 +81,7 @@ export class TransactionsService {
       amount: item.rentApplications.amount,
       total_price: item.rentApplications.total_price,
       createdAt: item.createdAt,
+      updatedAt: item.updatedAt
     }))
 
     return {
@@ -123,6 +124,7 @@ export class TransactionsService {
         amount: item.rentApplications.amount,
         total_price: item.rentApplications.total_price,
         createdAt: item.createdAt,
+        updatedAt: item.updatedAt
       }))
 
       return {

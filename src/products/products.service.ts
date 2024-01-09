@@ -318,6 +318,7 @@ export class ProductsService {
         photo: item.photoProducts[0]?.photo,
         active_status: item.active_status,
         location: item.location,
+        updatedAt: item.updatedAt
       }))
 
       return [datas, count]

@@ -37,7 +37,8 @@ export class UsersService {
       user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
       role: item.level.name,
       photo_profile: item.biodata.photo_profile,
-      isActive: item.biodata.isActive
+      isActive: item.biodata.isActive,
+      updatedAt: item.updatedAt
     }))
 
     return {
