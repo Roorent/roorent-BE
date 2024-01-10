@@ -105,6 +105,16 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('/profile/:id')
+  async userProfile(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data: await this.usersService.userProfile(id),
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('/byId/:id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {

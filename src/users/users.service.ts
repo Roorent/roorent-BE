@@ -167,6 +167,49 @@ export class UsersService {
     }
   }
 
+  async userProfile(id: string) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          level: true,
+          biodata: true,
+        },
+      })
+      const data = {
+        id: user.id,
+        role: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        first_name: user.biodata.first_name,
+        last_name: user.biodata.last_name,
+        nik: user.biodata.nik,
+        phone: user.biodata.phone,
+        address: user.biodata.address,
+        birthday: user.biodata.birth_date,
+        gender: user.biodata.gender,
+        status: user.biodata.isActive,
+        photo: user.biodata.photo_profile,
+      }
+
+      return data
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } else {
+        throw err
+      }
+    }
+  }
+
   async findOwnerOne(id: string) {
     try {
       const user = await this.usersRepository.findOneOrFail({
@@ -212,11 +255,49 @@ export class UsersService {
 
   async update(id: string, payload: UpdateUserDto) {
     try {
-      await this.usersRepository.findOneOrFail({
+      const user = await this.usersRepository.findOneOrFail({
         where: {
           id,
         },
+        relations: {
+          level: true,
+          biodata: true,
+        },
       })
+      
+      const biodataId = user.biodata.id
+
+      const dataBiodata = {
+        first_name: payload.first_name,
+        last_name: payload.last_name,
+        phone: payload.phone,
+        photo_profile: payload.photo_profile,
+        address: payload.address
+      }
+
+      const dataUsers = {
+        email: payload.email
+      }
+
+      await this.biodatasRepository.update(biodataId, dataBiodata)
+
+      await this.usersRepository.update(id, dataUsers)
+
+      const data = {
+        id: user.id,
+        role: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        nik: user.biodata.nik,
+        phone: user.biodata.phone,
+        address: user.biodata.address,
+        birthday: user.biodata.birth_date,
+        gender: user.biodata.gender,
+        status: user.biodata.isActive,
+        photo: user.biodata.photo_profile,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         throw new HttpException(
@@ -230,14 +311,6 @@ export class UsersService {
         throw err
       }
     }
-
-    await this.usersRepository.update(id, payload)
-
-    return this.usersRepository.findOneOrFail({
-      where: {
-        id,
-      },
-    })
   }
 
   async remove(id: string) {

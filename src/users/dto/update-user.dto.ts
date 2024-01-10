@@ -5,5 +5,17 @@ export class UpdateUserDto {
   email: string;
 
   @IsNotEmpty()
-  password: string;
+  first_name: string;
+
+  @IsNotEmpty()
+  last_name: string;
+
+  @IsNotEmpty()
+  photo_profile: string;
+
+  @IsNotEmpty()
+  phone: string;
+
+  @IsNotEmpty()
+  address: string;
 }

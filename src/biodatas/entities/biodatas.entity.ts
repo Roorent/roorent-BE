@@ -28,20 +28,17 @@ export class Biodatas {
 
   @Column({
     type: 'varchar',
-    length: 16,
     nullable: true,
   })
   nik: string
 
   @Column({
     type: 'varchar',
-    length: 25,
   })
   first_name: string
 
   @Column({
     type: 'varchar',
-    length: 255,
   })
   last_name: string
 
@@ -59,27 +56,23 @@ export class Biodatas {
 
   @Column({
     type: 'varchar',
-    length: 255,
     nullable: true,
   })
   photo_profile: string
 
   @Column({
-    type: 'char',
-    length: 16,
+    type: 'varchar',
   })
   phone: string
 
   @Column({
     type: 'varchar',
-    length: 255,
     nullable: true,
   })
   photo_ktp: string
 
   @Column({
     type: 'varchar',
-    length: 255,
     nullable: true
   })
   address: string
