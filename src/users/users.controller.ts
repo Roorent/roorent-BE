@@ -162,4 +162,15 @@ export class UsersController {
       data,
     }
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/password/:id')
+    async updatePassword(@Param('id', ParseUUIDPipe)id: string, @Body('password') password: string,){
+        const data = await this.usersService.updatePassword(id, password)
+        return {
+          statusCode: HttpStatus.OK,
+          message: "Success",
+          data,
+        }
+    }
 }

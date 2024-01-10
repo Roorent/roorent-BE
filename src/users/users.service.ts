@@ -429,4 +429,39 @@ export class UsersService {
       throw err
     }
   }
+
+  async updatePassword(id: string, password: any) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          level: true,
+          biodata: true,
+        },
+      })
+
+      const saltGenerate = await bcrypt.genSalt();
+      
+      const hash = await bcrypt.hash(password, saltGenerate);
+      
+      const usersEntity = new Users();
+      usersEntity.password = hash;
+      
+      await this.usersRepository.update(id, usersEntity);
+      
+      const data = {
+        id: user.id,
+        role: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
+      return data
+    } catch (e) {
+      throw e;
+    }
+  }
 }
