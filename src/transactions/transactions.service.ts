@@ -94,20 +94,37 @@ export class TransactionsService {
     id: string,
     status: any,
     page: number = 1,
-    limit: number = 90,
+    limit: number = 10,
   ) {
     try {
-      let [data, count] = await this.transactionsRepository.findAndCount({
-        where: { user: { id: id }, payment_status: status },
-        relations: {
-          user: { biodata: true },
-          rentApplications: {
-            product: { specialRules: true, photoProducts: true },
+      let count:any, data:any
+      if (status === 'semua') {
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: { user: { id }},
+          relations: {
+            user: { biodata: true },
+            rentApplications: {
+              product: { specialRules: true, photoProducts: true },
+            },
           },
-        },
-        skip: --page * limit,
-        take: limit,
-      })
+          skip: --page * limit,
+          take: limit,
+          order: {updatedAt: 'DESC'}
+        })
+      } else {
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: { user: { id }, payment_status: status },
+          relations: {
+            user: { biodata: true },
+            rentApplications: {
+              product: { specialRules: true, photoProducts: true },
+            },
+          },
+          skip: --page * limit,
+          take: limit,
+          order: {updatedAt: 'DESC'}
+        })
+      }
 
       const transactionsData = data.map((item) => ({
         id: item.id,

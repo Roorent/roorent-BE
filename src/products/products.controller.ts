@@ -152,11 +152,7 @@ export class ProductsController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    return this.productsService.listProductsWithSearch(
-      search,
-      page,
-      limit,
-    )
+    return this.productsService.listProductsWithSearch(search, page, limit)
   }
 
   @Get(':id')
@@ -196,10 +192,14 @@ export class ProductsController {
   async getProductsByOwner(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('type') type?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
     const [data, count]: any = await this.productsService.listProductsByOwner(
       id,
       type,
+      page,
+      limit
     )
     return {
       statusCode: HttpStatus.OK,

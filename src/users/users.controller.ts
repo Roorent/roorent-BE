@@ -23,7 +23,10 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @Get('all-users')
   async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-    const {count, userData} = await this.usersService.findAllUsers(page, limit)
+    const { count, userData } = await this.usersService.findAllUsers(
+      page,
+      limit,
+    )
 
     return {
       statusCode: HttpStatus.OK,
@@ -39,11 +42,7 @@ export class UsersController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    return this.usersService.searchUsers(
-      searchCriteria,
-      page,
-      limit,
-    )
+    return this.usersService.searchUsers(searchCriteria, page, limit)
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -51,6 +50,8 @@ export class UsersController {
   async findAll(
     @Query('role') role?: string,
     @Query('status') status?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
     if (status && !role) {
       return {
@@ -65,7 +66,11 @@ export class UsersController {
       if (status) {
         ;[data, count] = await this.usersService.findOwnerByStatus(status, role)
       } else {
-        ;[data, count] = await this.usersService.findUsersByLevel(role)
+        ;[data, count] = await this.usersService.findUsersByLevel(
+          role,
+          page,
+          limit,
+        )
       }
     } else {
       ;[data, count] = await this.usersService.findAll()
@@ -76,6 +81,8 @@ export class UsersController {
       message: 'success',
       count,
       data,
+      page,
+      limit,
     }
   }
 
@@ -175,12 +182,15 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/password/:id')
-    async updatePassword(@Param('id', ParseUUIDPipe)id: string, @Body('password') password: string,){
-        const data = await this.usersService.updatePassword(id, password)
-        return {
-          statusCode: HttpStatus.OK,
-          message: "Success",
-          data,
-        }
+  async updatePassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('password') password: string,
+  ) {
+    const data = await this.usersService.updatePassword(id, password)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      data,
     }
+  }
 }

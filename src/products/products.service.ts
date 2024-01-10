@@ -243,7 +243,6 @@ export class ProductsService {
       )
       await this.specialRulesRepository.update(specialRulesId, dataSpecialRules)
 
-      
       payload.photo.map(async (value) => {
         await this.photoProductsRepository.delete({ products: id })
         const photoProductsEntity = new PhotoProducts()
@@ -297,7 +296,12 @@ export class ProductsService {
     }
   }
 
-  async listProductsByOwner(id: string, types: string) {
+  async listProductsByOwner(
+    id: string,
+    types: string,
+    page: number = 1,
+    limit: number = 9,
+  ) {
     try {
       let [data, count] = await this.productsRepository.findAndCount({
         where: { user: { id: id }, type: types },
@@ -305,6 +309,9 @@ export class ProductsService {
           cities: true,
           photoProducts: true,
         },
+        skip: --page * limit,
+        take: limit,
+        order: { updatedAt: 'DESC' },
       })
 
       const datas = data.map((item) => ({
@@ -318,7 +325,7 @@ export class ProductsService {
         photo: item.photoProducts[0]?.photo,
         active_status: item.active_status,
         location: item.location,
-        updatedAt: item.updatedAt
+        updatedAt: item.updatedAt,
       }))
 
       return [datas, count]

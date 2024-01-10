@@ -23,7 +23,7 @@ export class UsersService {
   ) {}
 
   async findAllUsers(page: number = 1, limit: number = 10) {
-    const [data,count] = await this.usersRepository.findAndCount({
+    const [data, count] = await this.usersRepository.findAndCount({
       skip: --page * limit,
       take: limit,
       relations: {
@@ -32,18 +32,18 @@ export class UsersService {
       },
     })
 
-    const userData = data.map((item) =>({
+    const userData = data.map((item) => ({
       id: item.id,
       user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
       role: item.level.name,
       photo_profile: item.biodata.photo_profile,
       isActive: item.biodata.isActive,
-      updatedAt: item.updatedAt
+      updatedAt: item.updatedAt,
     }))
 
     return {
       count,
-      userData
+      userData,
     }
   }
 
@@ -77,17 +77,19 @@ export class UsersService {
     }
   }
 
-  async findUsersByLevel(role: string) {
+  async findUsersByLevel(role: string, page: number = 1, limit: number = 10) {
     try {
       if (!['owner', 'renter'].includes(role)) {
         throw new BadRequestException('Invalid, role not specified.')
       }
 
-      const result = await this.usersRepository
+      const data = await this.usersRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.level', 'level')
         .leftJoinAndSelect('user.biodata', 'biodata')
         .where('level.name = :role', { role })
+        .skip(--page * limit)
+        .take(limit)
         .getMany()
 
       const count = await this.usersRepository
@@ -95,6 +97,15 @@ export class UsersService {
         .leftJoin('user.level', 'level')
         .where('level.name = :role', { role })
         .getCount()
+
+      const result = data.map((item) => ({
+        id: item.id,
+        user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
+        role: item.level.name,
+        photo_profile: item.biodata.photo_profile,
+        isActive: item.biodata.isActive,
+        updatedAt: item.updatedAt,
+      }))
 
       return [result, count]
     } catch (err) {
@@ -224,7 +235,7 @@ export class UsersService {
 
       const data = {
         id: user.id,
-        role: user.level.name,
+        userRole: user.level.name,
         email: user.email,
         name: user.biodata.first_name + ' ' + user.biodata.last_name,
         nik: user.biodata.nik,
@@ -264,7 +275,7 @@ export class UsersService {
           biodata: true,
         },
       })
-      
+
       const biodataId = user.biodata.id
 
       const dataBiodata = {
@@ -272,11 +283,11 @@ export class UsersService {
         last_name: payload.last_name,
         phone: payload.phone,
         photo_profile: payload.photo_profile,
-        address: payload.address
+        address: payload.address,
       }
 
       const dataUsers = {
-        email: payload.email
+        email: payload.email,
       }
 
       await this.biodatasRepository.update(biodataId, dataBiodata)
@@ -515,26 +526,26 @@ export class UsersService {
         },
       })
 
-      const saltGenerate = await bcrypt.genSalt();
-      
-      const hash = await bcrypt.hash(password, saltGenerate);
-      
-      const usersEntity = new Users();
-      usersEntity.password = hash;
-      
-      await this.usersRepository.update(id, usersEntity);
-      
+      const saltGenerate = await bcrypt.genSalt()
+
+      const hash = await bcrypt.hash(password, saltGenerate)
+
+      const usersEntity = new Users()
+      usersEntity.password = hash
+
+      await this.usersRepository.update(id, usersEntity)
+
       const data = {
         id: user.id,
         role: user.level.name,
         email: user.email,
         name: user.biodata.first_name + ' ' + user.biodata.last_name,
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
       }
       return data
     } catch (e) {
-      throw e;
+      throw e
     }
   }
 }
