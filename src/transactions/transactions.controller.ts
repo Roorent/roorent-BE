@@ -119,10 +119,12 @@ export class TransactionsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('all-renter')
   async getAllRenter(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query('status') status: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
     const { count, transactionsData } = await this.transactionService.listAllRenter(
+      status,
       page,
       limit,
     );

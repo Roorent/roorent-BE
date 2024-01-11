@@ -57,36 +57,68 @@ export class TransactionsService {
     })
   }
 
-  async listAllRenter(page: number = 1, limit: number = 10) {
-    const [data, count] = await this.transactionsRepository.findAndCount({
-      where: {
-        transaction_type: TransactionType.RENTER,
-        payment_status: PaymentStatus.PENDING,
-      },
-      skip: --page * limit,
-      take: limit,
-      relations: {
-        user: { biodata: true },
-        rentApplications: { product: true },
-      },
-    })
-
-    const transactionsData = data.map((item) => ({
-      id: item.id,
-      trans_proof: item.transaction_proof,
-      user_name:
-        item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
-      product_name: item.rentApplications.product.name,
-      price: item.rentApplications.price,
-      amount: item.rentApplications.amount,
-      total_price: item.rentApplications.total_price,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt
-    }))
-
-    return {
-      count,
-      transactionsData,
+  async listAllRenter(status: any, page: number = 1, limit: number = 10) {
+    try {
+      let count:any, data:any
+      if (status ==='semua'){
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: {
+            transaction_type: TransactionType.RENTER,
+            // payment_status: PaymentStatus.PENDING,
+          },
+          skip: --page * limit,
+          take: limit,
+          relations: {
+            user: { biodata: true },
+            rentApplications: { product: true },
+          },
+          order: {updatedAt: 'DESC'}
+        })
+      } else {
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: {
+            transaction_type: TransactionType.RENTER,
+            // payment_status: PaymentStatus.PENDING,
+            payment_status: status
+          },
+          skip: --page * limit,
+          take: limit,
+          relations: {
+            user: { biodata: true },
+            rentApplications: { product: true },
+          },
+          order: {updatedAt: 'DESC'}
+        })
+      }
+  
+      const transactionsData = data.map((item) => ({
+        id: item.id,
+        trans_proof: item.transaction_proof,
+        payment_status: item.payment_status,
+        user_name:
+          item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+        product_name: item.rentApplications?.product?.name,
+        price: item.rentApplications?.price,
+        amount: item.rentApplications?.amount,
+        total_price: item.rentApplications?.total_price,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt
+      }))
+  
+      return {
+        count,
+        transactionsData,
+      }
+      
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
     }
   }
 
