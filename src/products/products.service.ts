@@ -28,10 +28,11 @@ export class ProductsService {
     private photoProductsRepository: Repository<PhotoProducts>,
   ) {}
 
-  findAll() {
-    return this.productsRepository.findAndCount({
+  async findAll(type: any) {
+    const [datas, count] = await this.productsRepository.findAndCount({
       where: {
         active_status: true,
+        type: type,
       },
       // skip: --page * limit,
       // take: limit,
@@ -43,6 +44,29 @@ export class ProductsService {
         photoProducts: true,
       },
     })
+
+    const data = datas.map((item) => ({
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      stock: item.stock,
+      daily_price: item.daily_price,
+      monthly_price: item.monthly_price,
+      address: item.address,
+      photo: item.photoProducts[0]?.photo,
+      active_status: item.active_status,
+      location: item.location,
+      city: item.cities.name,
+      specifications: item.productDescriptions.specifications,
+      facilities: item.productDescriptions.facilities,
+      descriptions: item.productDescriptions.descriptions,
+      gender: item.specialRules.gender,
+      rules: item.specialRules.rules,
+      photoProducts: item.photoProducts,
+      updatedAt: item.updatedAt,
+    }))
+
+    return [data, count]
   }
 
   findAllHotel(page: number = 1, limit: number = 10) {
@@ -301,18 +325,33 @@ export class ProductsService {
     types: string,
     page: number = 1,
     limit: number = 9,
+    status: string,
   ) {
     try {
-      let [data, count] = await this.productsRepository.findAndCount({
-        where: { user: { id: id }, type: types },
-        relations: {
-          cities: true,
-          photoProducts: true,
-        },
-        skip: --page * limit,
-        take: limit,
-        order: { updatedAt: 'DESC' },
-      })
+      let count: any, data: any
+      if (status === 'true') {
+        ;[data, count] = await this.productsRepository.findAndCount({
+          where: { user: { id: id }, type: types, active_status: true },
+          relations: {
+            cities: true,
+            photoProducts: true,
+          },
+          skip: --page * limit,
+          take: limit,
+          order: { updatedAt: 'DESC' },
+        })
+      } else {
+        ;[data, count] = await this.productsRepository.findAndCount({
+          where: { user: { id: id }, type: types },
+          relations: {
+            cities: true,
+            photoProducts: true,
+          },
+          skip: --page * limit,
+          take: limit,
+          order: { updatedAt: 'DESC' },
+        })
+      }
 
       const datas = data.map((item) => ({
         id: item.id,
@@ -341,17 +380,19 @@ export class ProductsService {
     }
   }
 
-  async deactivateProductOwner(id: string) {
+  async nonactivateProductOwner(id: string) {
     try {
-      const owner = await this.userService.findOne(id)
-      await this.productsRepository.update(
-        { user: { id: owner.id } },
-        { active_status: false },
-      )
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Owner products deactivated successfully',
-      }
+      await this.productsRepository.findOneOrFail({
+        where: { id },
+        relations: ['user'],
+      })
+
+      await this.productsRepository.update({ id }, { active_status: false })
+      return await this.productsRepository.findOneOrFail({
+        where: {
+          id,
+        },
+      })
     } catch (err) {
       throw err
     }
