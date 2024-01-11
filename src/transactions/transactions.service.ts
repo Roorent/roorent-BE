@@ -64,7 +64,6 @@ export class TransactionsService {
         [data, count] = await this.transactionsRepository.findAndCount({
           where: {
             transaction_type: TransactionType.RENTER,
-            // payment_status: PaymentStatus.PENDING,
           },
           skip: --page * limit,
           take: limit,
@@ -78,7 +77,6 @@ export class TransactionsService {
         [data, count] = await this.transactionsRepository.findAndCount({
           where: {
             transaction_type: TransactionType.RENTER,
-            // payment_status: PaymentStatus.PENDING,
             payment_status: status
           },
           skip: --page * limit,
