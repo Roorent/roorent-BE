@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateUserDto {
   @IsNotEmpty()
@@ -10,7 +10,7 @@ export class UpdateUserDto {
   @IsNotEmpty()
   last_name: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   photo_profile: string;
 
   @IsNotEmpty()
