@@ -186,4 +186,30 @@ export class ReviewsService {
 
     return [reviewsData, count]
   }
+
+  async findByTrancations(page: number = 1, limit: number = 10, trancationsId: string) {
+    const sorter = 'ASC' // 'ASC' or 'DESC'
+
+    const [data, count] = await this.reviewsRepository.findAndCount({
+      where: { transactions: { id: trancationsId } },
+      skip: --page * limit,
+      take: limit,
+      order: {
+        rating: `${sorter}`,
+      },
+      relations: ['user.biodata', 'product', 'photoReviews', 'transactions'],
+    })
+
+    const reviewsData = data.map((item) =>({
+      id: item.id,
+      rating: item.rating,
+      content: item.content,
+      photo: item.photoReviews,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      // transactions: item.transactions,
+      createdAt: item.createdAt
+    }))
+
+    return [reviewsData, count]
+  }
 }

@@ -77,6 +77,26 @@ export class ReviewsController {
     }
   }
 
+  @Get('/trancations/:id')
+  async findByTrancations(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const [reviewsData, count] = await this.reviewService.findByTrancations(
+      page,
+      limit,
+      id,
+    )
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      reviewsData,
+    }
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Post(':id')
   async create(

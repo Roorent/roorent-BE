@@ -308,6 +308,7 @@ export class TransactionsService {
         id: transactionsId.id,
         payment_code: transactionsId.payment_code,
         payment_status: transactionsId.payment_status,
+        reason: transactionsId.reason,
         product_id: transactionsId.rentApplications.product.id,
         product_name: transactionsId.rentApplications.product.name,
         product_address: transactionsId.rentApplications.product.address,

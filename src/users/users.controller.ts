@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
   Patch,
+  Search,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -38,11 +39,11 @@ export class UsersController {
 
   @Get('/search')
   async listProductsWithSearch(
-    @Query('s') searchCriteria: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('q') search: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
-    return this.usersService.searchUsers(searchCriteria, page, limit)
+    return this.usersService.searchUsers(search, page, limit)
   }
 
   @UseGuards(AuthGuard('jwt'))

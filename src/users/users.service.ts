@@ -48,16 +48,16 @@ export class UsersService {
   }
 
   async searchUsers(
-    searchCriteria: string,
+    search: string,
     page: number = 1,
     limit: number = 10,
   ) {
-    const [data, count] = await this.usersRepository.findAndCount({
+    const [datas, count] = await this.usersRepository.findAndCount({
       where: [
         {
           biodata: [
-            { first_name: ILike(`%${searchCriteria}%`) },
-            { last_name: ILike(`%${searchCriteria}%`) },
+            { first_name: ILike(`%${search}%`) },
+            { last_name: ILike(`%${search}%`) },
           ],
         },
       ],
@@ -68,6 +68,15 @@ export class UsersService {
       take: limit,
       skip: (page - 1) * limit,
     })
+
+    const data = datas.map((item) => ({
+      id: item.id,
+      user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
+      role: item.level.name,
+      photo_profile: item.biodata.photo_profile,
+      isActive: item.biodata.isActive,
+      updatedAt: item.updatedAt,
+    }))
 
     return {
       statusCode: HttpStatus.OK,
