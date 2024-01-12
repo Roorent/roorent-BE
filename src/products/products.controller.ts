@@ -25,9 +25,7 @@ export class ProductsController {
   ) {}
 
   @Get('all')
-  async getAll(
-    @Query('type') type?: string,
-  ) {
+  async getAll(@Query('type') type?: string) {
     const [data, count] = await this.productsService.findAll(type)
 
     return {
@@ -150,18 +148,39 @@ export class ProductsController {
 
   @Get('/search')
   async listProductsWithSearch(
-    @Query('q') search: string,
+    @Query('q') search?: string,
+    @Query('type') type?: string,
+    @Query('city') city?: string,
+    @Query('payment') payment?: string,
+    @Query('min') min?: string,
+    @Query('max') max?: string,
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('limit') limit: number = 9,
   ) {
-    return this.productsService.listProductsWithSearch(search, page, limit)
+    const [data, count] = await this.productsService.listProductsWithSearch(
+      search,
+      type,
+      city,
+      payment,
+      min,
+      max,
+      page,
+      limit,
+    )
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
+    }
   }
 
   @Get(':id')
   async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
     return {
       statusCode: HttpStatus.OK,
-      message: 'succes',
+      message: 'Success',
       data: await this.productsService.findOneById(id),
     }
   }
@@ -176,7 +195,7 @@ export class ProductsController {
 
     return {
       statusCode: HttpStatus.OK,
-      message: 'succes',
+      message: 'Success',
       data,
     }
   }
@@ -203,7 +222,7 @@ export class ProductsController {
       type,
       page,
       limit,
-      status
+      status,
     )
     return {
       statusCode: HttpStatus.OK,

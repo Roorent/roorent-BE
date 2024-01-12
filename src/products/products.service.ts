@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Products, ProductsType } from './enitities/products.entity'
-import { ILike, EntityNotFoundError, Repository } from 'typeorm'
+import { ILike, EntityNotFoundError, Repository, Brackets } from 'typeorm'
 import { UsersService } from '#/users/users.service'
 import { CreateProductsDTO } from './dto/create-products.dto'
 import { CitiesService } from '#/cities/cities.service'
@@ -400,35 +400,64 @@ export class ProductsService {
 
   async listProductsWithSearch(
     search: string,
+    type: string,
+    city: string,
+    payment: string,
+    min: string,
+    max: string,
     page: number = 1,
     limit: number = 10,
   ) {
-    const [data, count] = await this.productsRepository.findAndCount({
-      where: [
-        { name: ILike(`%${search}%`) },
-        { address: ILike(`%${search}%`) },
-        {
-          cities: {
-            name: ILike(`%${search}%`),
-          },
-        },
-      ],
-      relations: {
-        cities: true,
-        productDescriptions: true,
-        specialRules: true,
-        photoProducts: true,
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-    })
+    const queryBuilder = this.productsRepository.createQueryBuilder('product')
+    const [data, count] = await queryBuilder
+      .where('product.active_status = :activeStatus', { activeStatus: true })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('product.name ILIKE :search', { search: `%${search}%` })
+            .orWhere('product.address ILIKE :search', { search: `%${search}%` })
+            .orWhere('product.type = :type', { type })
+          if (city) {
+            qb.andWhere('cities.name ILIKE :city', {
+              city: `%${city}%`,
+            })
+          }
+          if (min && max) {
+            if (payment === 'bulanan') {
+              qb.andWhere(
+                '(product.monthly_price >= :min AND product.monthly_price <= :max)',
+                { min, max },
+              )
+            } else if (payment === 'harian') {
+              qb.andWhere(
+                '(product.daily_price >= :min AND product.daily_price <= :max)',
+                { min, max },
+              )
+            }
+          }
+        }),
+      )
+      .leftJoinAndSelect('product.cities', 'cities')
+      .leftJoinAndSelect('product.productDescriptions', 'productDescriptions')
+      .leftJoinAndSelect('product.specialRules', 'specialRules')
+      .leftJoinAndSelect('product.photoProducts', 'photoProducts')
+      .take(limit)
+      .skip(--page * limit)
+      .getManyAndCount()
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Success',
-      count,
-      data,
-    }
+    const datas = data.map((item) => ({
+      id: item?.id,
+      name: item?.name,
+      stock: item?.stock,
+      type: item?.type,
+      gender: item?.specialRules?.gender,
+      daily_price: item?.daily_price,
+      monthly_price: item?.monthly_price,
+      address: item?.address,
+      city: item?.cities?.name,
+      photoProducts: item?.photoProducts,
+    }))
+
+    return [datas, count]
   }
 
   async recommendProductKos(
