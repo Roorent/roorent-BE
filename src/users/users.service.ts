@@ -5,12 +5,13 @@ import {
   Injectable,
 } from '@nestjs/common'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { EntityNotFoundError, Repository } from 'typeorm'
+import { EntityNotFoundError, ILike, Repository } from 'typeorm'
 import { Users } from './entities/user.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Biodatas, StatusUsers } from '#/biodatas/entities/biodatas.entity'
 import { ReactiveUserDto } from './dto/reactive-user.dto'
 import * as bcrypt from 'bcrypt'
+import { Levels } from '#/levels/entities/level.entity'
 
 @Injectable()
 export class UsersService {
@@ -21,17 +22,83 @@ export class UsersService {
     private biodatasRepository: Repository<Biodatas>,
   ) {}
 
-  async findUsersByLevel(role: string) {
+  async findAllUsers(page: number = 1, limit: number = 10) {
+    const [data, count] = await this.usersRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        level: true,
+        biodata: true,
+      },
+    })
+
+    const userData = data.map((item) => ({
+      id: item.id,
+      user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
+      role: item.level.name,
+      photo_profile: item.biodata.photo_profile,
+      isActive: item.biodata.isActive,
+      updatedAt: item.updatedAt,
+    }))
+
+    return {
+      count,
+      userData,
+    }
+  }
+
+  async searchUsers(
+    search: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const [datas, count] = await this.usersRepository.findAndCount({
+      where: [
+        {
+          biodata: [
+            { first_name: ILike(`%${search}%`) },
+            { last_name: ILike(`%${search}%`) },
+          ],
+        },
+      ],
+      relations: {
+        level: true,
+        biodata: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    })
+
+    const data = datas.map((item) => ({
+      id: item.id,
+      user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
+      role: item.level.name,
+      photo_profile: item.biodata.photo_profile,
+      isActive: item.biodata.isActive,
+      updatedAt: item.updatedAt,
+    }))
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
+    }
+  }
+
+  async findUsersByLevel(role: string, page: number = 1, limit: number = 10) {
     try {
       if (!['owner', 'renter'].includes(role)) {
         throw new BadRequestException('Invalid, role not specified.')
       }
 
-      const result = await this.usersRepository
+      const data = await this.usersRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.level', 'level')
         .leftJoinAndSelect('user.biodata', 'biodata')
         .where('level.name = :role', { role })
+        .skip(--page * limit)
+        .take(limit)
         .getMany()
 
       const count = await this.usersRepository
@@ -39,6 +106,15 @@ export class UsersService {
         .leftJoin('user.level', 'level')
         .where('level.name = :role', { role })
         .getCount()
+
+      const result = data.map((item) => ({
+        id: item.id,
+        user_name: item.biodata.first_name + ' ' + item.biodata.last_name,
+        role: item.level.name,
+        photo_profile: item.biodata.photo_profile,
+        isActive: item.biodata.isActive,
+        updatedAt: item.updatedAt,
+      }))
 
       return [result, count]
     } catch (err) {
@@ -111,13 +187,34 @@ export class UsersService {
     }
   }
 
-  async update(id: string, payload: UpdateUserDto) {
+  async userProfile(id: string) {
     try {
-      await this.usersRepository.findOneOrFail({
+      const user = await this.usersRepository.findOneOrFail({
         where: {
           id,
         },
+        relations: {
+          level: true,
+          biodata: true,
+        },
       })
+      const data = {
+        id: user.id,
+        role: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        first_name: user.biodata.first_name,
+        last_name: user.biodata.last_name,
+        nik: user.biodata.nik,
+        phone: user.biodata.phone,
+        address: user.biodata.address,
+        birthday: user.biodata.birth_date,
+        gender: user.biodata.gender,
+        status: user.biodata.isActive,
+        photo: user.biodata.photo_profile,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         throw new HttpException(
@@ -131,14 +228,109 @@ export class UsersService {
         throw err
       }
     }
+  }
 
-    await this.usersRepository.update(id, payload)
+  async findOwnerOne(id: string) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          level: true,
+          biodata: true,
+        },
+      })
 
-    return this.usersRepository.findOneOrFail({
-      where: {
-        id,
-      },
-    })
+      const data = {
+        id: user.id,
+        userRole: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        nik: user.biodata.nik,
+        phone: user.biodata.phone,
+        address: user.biodata.address,
+        birthday: user.biodata.birth_date,
+        gender: user.biodata.gender,
+        status: user.biodata.isActive,
+        photo: user.biodata.photo_profile,
+        ktp: user.biodata.photo_ktp,
+      }
+
+      return data
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } else {
+        throw err
+      }
+    }
+  }
+
+  async update(id: string, payload: UpdateUserDto) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          level: true,
+          biodata: true,
+        },
+      })
+
+      const biodataId = user.biodata.id
+
+      const dataBiodata = {
+        first_name: payload.first_name,
+        last_name: payload.last_name,
+        phone: payload.phone,
+        photo_profile: payload.photo_profile,
+        address: payload.address,
+      }
+
+      const dataUsers = {
+        email: payload.email,
+      }
+
+      await this.biodatasRepository.update(biodataId, dataBiodata)
+
+      await this.usersRepository.update(id, dataUsers)
+
+      const data = {
+        id: user.id,
+        role: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        nik: user.biodata.nik,
+        phone: user.biodata.phone,
+        address: user.biodata.address,
+        birthday: user.biodata.birth_date,
+        gender: user.biodata.gender,
+        status: user.biodata.isActive,
+        photo: user.biodata.photo_profile,
+      }
+
+      return data
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            error: 'Data not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      } else {
+        throw err
+      }
+    }
   }
 
   async remove(id: string) {
@@ -165,8 +357,7 @@ export class UsersService {
     await this.usersRepository.softDelete(id)
   }
 
-  async getNonactive(id: string
-    ) {
+  async getNonactive(id: string) {
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
@@ -236,24 +427,29 @@ export class UsersService {
         )
       }
 
-      const existingUser:any = await this.usersRepository.findOne({ 
-        where: {biodata: {first_name: payload.first_name, last_name: payload.last_name}} 
-      });
-
-    if (existingUser) {
-      const biodataId = user.biodata.id
-      const biodatasEntity = new Biodatas()
-      biodatasEntity.isActive = StatusUsers.ACTIVE
-      await this.biodatasRepository.update(biodataId, biodatasEntity)
-    } else {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          error: 'first name and last name is invalid',
+      const existingUser: any = await this.usersRepository.findOne({
+        where: {
+          biodata: {
+            first_name: payload.first_name,
+            last_name: payload.last_name,
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      )
-    }
+      })
+
+      if (existingUser) {
+        const biodataId = user.biodata.id
+        const biodatasEntity = new Biodatas()
+        biodatasEntity.isActive = StatusUsers.ACTIVE
+        await this.biodatasRepository.update(biodataId, biodatasEntity)
+      } else {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'first name and last name is invalid',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
+      }
 
       return await this.biodatasRepository.findOneOrFail({
         where: { user: { id } },
@@ -295,7 +491,7 @@ export class UsersService {
     }
   }
 
-  async rejectOwner(id: string, reason: any){
+  async rejectOwner(id: string, reason: any) {
     try {
       const user = await this.usersRepository.findOneOrFail({
         relations: ['biodata'],
@@ -324,6 +520,41 @@ export class UsersService {
       })
     } catch (err) {
       throw err
+    }
+  }
+
+  async updatePassword(id: string, password: any) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          level: true,
+          biodata: true,
+        },
+      })
+
+      const saltGenerate = await bcrypt.genSalt()
+
+      const hash = await bcrypt.hash(password, saltGenerate)
+
+      const usersEntity = new Users()
+      usersEntity.password = hash
+
+      await this.usersRepository.update(id, usersEntity)
+
+      const data = {
+        id: user.id,
+        role: user.level.name,
+        email: user.email,
+        name: user.biodata.first_name + ' ' + user.biodata.last_name,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
+      return data
+    } catch (e) {
+      throw e
     }
   }
 }

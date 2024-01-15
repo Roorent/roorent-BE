@@ -27,7 +27,8 @@ export class UpdateProductsDTO {
   location: string
 
   @IsNotEmpty()
-  photo: string
+  @IsArray()
+  photo: string[]
 
   @IsNotEmpty()
   specifications: string
@@ -36,12 +37,12 @@ export class UpdateProductsDTO {
   facilities: string
 
   @IsNotEmpty()
-  note: string
+  descriptions: string
 
   @IsNotEmpty()
   @IsEnum(GenderProduct)
   gender: GenderProduct
 
   @IsNotEmpty()
-  Note: string
+  rules: string
 }

@@ -47,7 +47,7 @@ export class TransactionsController {
     }
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Get('photo_transactions/:type/:filename')
   getProfileImage(
     @Param('type') type: string,
@@ -119,19 +119,21 @@ export class TransactionsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('all-renter')
   async getAllRenter(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query('status') status: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
-    const [data, count] = await this.transactionService.listAllRenter(
+    const { count, transactionsData } = await this.transactionService.listAllRenter(
+      status,
       page,
       limit,
-    )
+    );
 
     return {
       statusCode: HttpStatusCode.Ok,
       message: 'success',
       count,
-      data,
+      transactionsData
     }
   }
 
@@ -237,13 +239,19 @@ export class TransactionsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/list-renter/:id')
-  async getTransactionsByRenter(@Param('id', ParseUUIDPipe) id: string) {
-    const data = await this.transactionService.listTransactionsByRenter(id)
+  async getTransactionsByRenter(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('status') status: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    ) {
+    const{ count, transactionsData }: any = await this.transactionService.listTransactionsByRenter(id, status, page,limit)
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-      data,
+      count,
+      transactionsData,
     }
   }
 
@@ -269,6 +277,21 @@ export class TransactionsController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/products/:id')
+  async listTransactionsByProducts(
+    @Param('id', ParseUUIDPipe) id: string,
+    ) {
+    const{ count, data }: any = await this.transactionService.listTransactionsByProducts(id)
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
       data,
     }
   }

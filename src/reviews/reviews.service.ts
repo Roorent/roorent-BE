@@ -24,7 +24,36 @@ export class ReviewsService {
     private productService: ProductsService,
   ) {}
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAllreviews(page: number = 1, limit: number = 10) {
+    const [data,count] = await this.reviewsRepository.findAndCount({
+      skip: --page * limit,
+      take: limit,
+      relations: {
+        user: {biodata: true},
+        photoReviews: true,
+        transactions: true,
+      },
+    })
+
+    const reviewsData = data.map((item) =>({
+      id: item.id,
+      rating: item.rating,
+      content: item.content,
+      photo1: item.photoReviews[0]?.photo,
+      photo2: item.photoReviews[1]?.photo,
+      photo3: item.photoReviews[2]?.photo,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      // transactions: item.transactions,
+      createdAt: item.createdAt
+    }))
+
+    return {
+      count,
+      reviewsData
+    }
+  }
+
+  async findAllByBadRating(page: number = 1, limit: number = 10) {
     const sorter = 'ASC' // 'ASC' or 'DESC'
 
     const data = await this.reviewsRepository.findAndCount({
@@ -81,24 +110,27 @@ export class ReviewsService {
 
       const insertReviews = await this.reviewsRepository.insert(reviewEntity)
 
-      const photoReviewsEntity = new PhotoReviews()
-      photoReviewsEntity.photo = payload.photo
-      // if (Array.isArray(payload.photo)) {
-      //   photoReviewsEntity.photo = payload.photo
-      // } else {
-      //   photoReviewsEntity.photo = [payload.photo]
-      // }
-      photoReviewsEntity.reviews = insertReviews.identifiers[0].id
-      const insertPhotoReviews = await this.photoReviewsRepository.insert(
-        photoReviewsEntity,
-      )
-
-      return await this.photoReviewsRepository.findOneOrFail({
-        where: {
-          id: insertPhotoReviews.identifiers[0].id,
-        },
-        relations: { reviews: true },
+      payload.photo.forEach(async (item) => {
+        const photoReviewsEntity = new PhotoReviews()
+        photoReviewsEntity.photo = item 
+        photoReviewsEntity.reviews = insertReviews.identifiers[0].id
+        await this.photoReviewsRepository.insert(
+          photoReviewsEntity,
+        )
       })
+      // const insertPhotoReviews = await this.photoReviewsRepository.insert(
+      //   photoReviewsEntity,
+      // )
+
+      // return await this.photoReviewsRepository.findOneOrFail({
+      //   where: {
+      //     id: insertPhotoReviews.identifiers[0].id,
+      //   },
+      //   relations: { reviews: true },
+      // })
+      return (
+        this.findAllByBadRating()
+      )
     } catch (err) {
       throw err
     }
@@ -139,9 +171,45 @@ export class ReviewsService {
       order: {
         rating: `${sorter}`,
       },
-      relations: ['user', 'product'],
+      relations: ['user.biodata', 'product', 'photoReviews', 'transactions'],
     })
 
-    return [data, count]
+    const reviewsData = data.map((item) =>({
+      id: item.id,
+      rating: item.rating,
+      content: item.content,
+      photo: item.photoReviews,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      // transactions: item.transactions,
+      createdAt: item.createdAt
+    }))
+
+    return [reviewsData, count]
+  }
+
+  async findByTrancations(page: number = 1, limit: number = 10, trancationsId: string) {
+    const sorter = 'ASC' // 'ASC' or 'DESC'
+
+    const [data, count] = await this.reviewsRepository.findAndCount({
+      where: { transactions: { id: trancationsId } },
+      skip: --page * limit,
+      take: limit,
+      order: {
+        rating: `${sorter}`,
+      },
+      relations: ['user.biodata', 'product', 'photoReviews', 'transactions'],
+    })
+
+    const reviewsData = data.map((item) =>({
+      id: item.id,
+      rating: item.rating,
+      content: item.content,
+      photo: item.photoReviews,
+      user_name: item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+      // transactions: item.transactions,
+      createdAt: item.createdAt
+    }))
+
+    return [reviewsData, count]
   }
 }

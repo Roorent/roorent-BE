@@ -78,6 +78,22 @@ export class PhotoProductsController {
     }
   }
 
+  @Delete('/filename/:fileName')
+  async deletePhotoByName(@Param('fileName') fileName: string) {
+    return {
+      statusCode: HttpStatus.OK,
+      message: await this.photoProductsService.deletePhotoByName(fileName),
+    }
+  }
+
+  @Delete('/invalid-files')
+  async deleteInvalidFiles() {
+    return {
+      statusCode: HttpStatus.OK,
+      message: await this.photoProductsService.deleteInvalidFiles(),
+    }
+  }
+
   @Delete(':id')
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     return {

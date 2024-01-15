@@ -31,6 +31,12 @@ export class Transactions {
   id: string
 
   @Column({
+    type: 'varchar',
+    nullable: false,
+  })
+  payment_code: string
+
+  @Column({
     type: 'bigint',
     nullable: true,
   })

@@ -5,5 +5,6 @@ export class CreatePhotoProductsDTO {
   product_id: string;
 
   @IsNotEmpty()
-  photo: string
+  @IsArray()
+  photo: string[]
 }

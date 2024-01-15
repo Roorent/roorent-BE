@@ -14,12 +14,16 @@ import { UpdateTransactionsDTO } from './dto/update-transactions.dto'
 import { approveRejectDTO } from './dto/approveReject.dto'
 import puppeteer from 'puppeteer'
 import { NotificationsService } from '#/notifications/notifications.service'
+import { generatePaymentNumber } from '#/utils/generate'
+import { Products } from '#/products/enitities/products.entity'
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
     private transactionsRepository: Repository<Transactions>,
+    @InjectRepository(Products)
+    private productsRepository: Repository<Products>,
     private bankService: BanksService,
     private userService: UsersService,
     private rentApplicationsService: RentApplicationsService,
@@ -53,27 +57,127 @@ export class TransactionsService {
     })
   }
 
-  listAllRenter(page: number = 1, limit: number = 10) {
-    return this.transactionsRepository.findAndCount({
-      where: {
-        transaction_type: TransactionType.RENTER,
-      },
-      skip: --page * limit,
-      take: limit,
-      relations: {
-        user: true,
-        banks: true,
-        rentApplications: { product: true },
-      },
-    })
+  async listAllRenter(status: any, page: number = 1, limit: number = 10) {
+    try {
+      let count:any, data:any
+      if (status ==='semua'){
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: {
+            transaction_type: TransactionType.RENTER,
+          },
+          skip: --page * limit,
+          take: limit,
+          relations: {
+            user: { biodata: true },
+            rentApplications: { product: true },
+          },
+          order: {updatedAt: 'DESC'}
+        })
+      } else {
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: {
+            transaction_type: TransactionType.RENTER,
+            payment_status: status
+          },
+          skip: --page * limit,
+          take: limit,
+          relations: {
+            user: { biodata: true },
+            rentApplications: { product: true },
+          },
+          order: {updatedAt: 'DESC'}
+        })
+      }
+  
+      const transactionsData = data.map((item) => ({
+        id: item.id,
+        trans_proof: item.transaction_proof,
+        payment_status: item.payment_status,
+        user_name:
+          item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+        product_name: item.rentApplications?.product?.name,
+        price: item.rentApplications?.price,
+        amount: item.rentApplications?.amount,
+        total_price: item.rentApplications?.total_price,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt
+      }))
+  
+      return {
+        count,
+        transactionsData,
+      }
+      
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
+    }
   }
 
-  async listTransactionsByRenter(id: string) {
+  async listTransactionsByRenter(
+    id: string,
+    status: any,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     try {
-      const renter = await this.userService.findOne(id)
-      return await this.transactionsRepository.findOneOrFail({
-        where: { user: { id: renter.id } },
-      })
+      let count:any, data:any
+      if (status === 'semua') {
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: { user: { id }},
+          relations: {
+            user: { biodata: true },
+            rentApplications: {
+              product: { specialRules: true, photoProducts: true },
+            },
+          },
+          skip: --page * limit,
+          take: limit,
+          order: {updatedAt: 'DESC'}
+        })
+      } else {
+        [data, count] = await this.transactionsRepository.findAndCount({
+          where: { user: { id }, payment_status: status },
+          relations: {
+            user: { biodata: true },
+            rentApplications: {
+              product: { specialRules: true, photoProducts: true },
+            },
+          },
+          skip: --page * limit,
+          take: limit,
+          order: {updatedAt: 'DESC'}
+        })
+      }
+
+      const transactionsData = data.map((item) => ({
+        id: item.id,
+        payment_code: item.payment_code,
+        payment_status: item.payment_status,
+        product_name: item.rentApplications.product.name,
+        product_address: item.rentApplications.product.address,
+        product_type: item.rentApplications.product.type,
+        product_gender: item.rentApplications.product.specialRules.gender,
+        product_photo: item.rentApplications.product.photoProducts[0]?.photo,
+        user_name:
+          item.user.biodata.first_name + ' ' + item.user.biodata.last_name,
+        price: item.rentApplications.price,
+        amount: item.rentApplications.amount,
+        total_price: item.rentApplications.total_price,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt
+      }))
+
+      return {
+        count,
+        transactionsData,
+      }
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -132,17 +236,24 @@ export class TransactionsService {
 
   async getDetailRenterById(id: string) {
     try {
-      return await this.transactionsRepository.findOneOrFail({
-        where: {
-          transaction_type: TransactionType.RENTER,
-          id,
-        },
-        relations: {
-          user: true,
-          banks: true,
-          rentApplications: { product: true },
-        },
-      })
+      const transactionRenterByRentApp =
+        await this.transactionsRepository.findOneOrFail({
+          where: {
+            transaction_type: TransactionType.RENTER,
+            rentApplications: { id },
+          },
+        })
+
+      const data = {
+        id: transactionRenterByRentApp.id,
+        payment_code: transactionRenterByRentApp.payment_code,
+        payment_status: transactionRenterByRentApp.payment_status,
+        transaction_proof: transactionRenterByRentApp.transaction_proof,
+        transaction_type: transactionRenterByRentApp.transaction_type,
+        reason: transactionRenterByRentApp.reason,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -182,14 +293,44 @@ export class TransactionsService {
 
   async findOneById(id: string) {
     try {
-      return await this.transactionsRepository.findOneOrFail({
+      const transactionsId = await this.transactionsRepository.findOneOrFail({
         where: { id },
         relations: {
-          user: true,
+          user: { biodata: true },
           banks: true,
-          rentApplications: { product: true },
+          rentApplications: {
+            product: { specialRules: true, photoProducts: true },
+          },
         },
       })
+
+      const data = {
+        id: transactionsId.id,
+        payment_code: transactionsId.payment_code,
+        payment_status: transactionsId.payment_status,
+        reason: transactionsId.reason,
+        product_id: transactionsId.rentApplications.product.id,
+        product_name: transactionsId.rentApplications.product.name,
+        product_address: transactionsId.rentApplications.product.address,
+        product_type: transactionsId.rentApplications.product.type,
+        product_gender:
+          transactionsId.rentApplications.product.specialRules.gender,
+        product_photo:
+          transactionsId.rentApplications.product.photoProducts[0]?.photo,
+        user_name:
+          transactionsId.user.biodata.first_name +
+          ' ' +
+          transactionsId.user.biodata.last_name,
+        price: transactionsId.rentApplications.price,
+        amount: transactionsId.rentApplications.amount,
+        lease_start: transactionsId.rentApplications.lease_start,
+        lease_expiration: transactionsId.rentApplications.lease_expiration,
+        rental_type: transactionsId.rentApplications.rental_type,
+        total_price: transactionsId.rentApplications.total_price,
+        createdAt: transactionsId.createdAt,
+      }
+
+      return data
     } catch (err) {
       if (err instanceof EntityNotFoundError) {
         return {
@@ -209,23 +350,19 @@ export class TransactionsService {
   ) {
     try {
       const findOneUserId = await this.userService.findOne(userId)
-      const [users, count] = await this.userService.findAll()
-      const userAdmin = users.filter((user) => user.level.name === 'admin')
 
       const findOneRentApplicationsId: any =
         await this.rentApplicationsService.findOneById(id)
-      const findOneBankId = await this.bankService.findOneByUser(
-        userAdmin[0].id,
-      )
 
       const expiredTime = Date.now() + 60 * 60 * 1000 * 3
 
       const transactionsEntity = new Transactions()
+      transactionsEntity.payment_code = generatePaymentNumber()
       transactionsEntity.expired_payment = expiredTime.toString()
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.RENTER
       transactionsEntity.user = findOneUserId
-      transactionsEntity.banks = findOneBankId
+      transactionsEntity.banks = payload.bank_id
       transactionsEntity.rentApplications = findOneRentApplicationsId
 
       const insertRentApplications = await this.transactionsRepository.insert(
@@ -237,7 +374,6 @@ export class TransactionsService {
           id: insertRentApplications.identifiers[0].id,
         },
         relations: {
-          user: true,
           banks: true,
           rentApplications: { product: true },
         },
@@ -264,6 +400,7 @@ export class TransactionsService {
       const expiredTime = Date.now() + 60 * 60 * 1000 * 3
 
       const transactionsEntity = new Transactions()
+      transactionsEntity.payment_code = generatePaymentNumber()
       transactionsEntity.expired_payment = expiredTime.toString()
       transactionsEntity.transaction_proof = payload.transaction_proof
       transactionsEntity.transaction_type = TransactionType.OWNER
@@ -320,10 +457,27 @@ export class TransactionsService {
 
   async appTransactions(id: string, payload: approveRejectDTO) {
     try {
-      await this.findOneById(id)
+      const allTransactions = await this.transactionsRepository.findOneOrFail({
+        where: { id },
+        relations: {
+          user: true,
+          banks: true,
+          rentApplications: { product: true },
+        },
+      })
+
+      const productId = allTransactions.rentApplications.product.id
+
       const transactionsEntity = new Transactions()
       transactionsEntity.payment_status = payload.status
       transactionsEntity.reason = payload.reason
+
+      const productsEntity = new Products()
+      if (payload.status === 'approve') {
+        productsEntity.stock =
+          allTransactions.rentApplications.product.stock - 1
+        await this.productsRepository.update(productId, productsEntity)
+      }
       await this.transactionsRepository.update(id, transactionsEntity)
 
       const transData = await this.transactionsRepository.findOneOrFail({
@@ -382,6 +536,37 @@ export class TransactionsService {
       return result
     } catch (err) {
       throw err
+    }
+  }
+
+  async listTransactionsByProducts(id: string) {
+    try {
+      let [data, count] = await this.transactionsRepository.findAndCount({
+        where: {
+          rentApplications: { product: { id: id } },
+          payment_status: PaymentStatus.APPROVE,
+          transaction_type: TransactionType.RENTER,
+        },
+        relations: {
+          user: { biodata: true },
+          rentApplications: {
+            product: { specialRules: true, photoProducts: true },
+          },
+        },
+      })
+      return {
+        count,
+        data,
+      }
+    } catch (err) {
+      if (err instanceof EntityNotFoundError) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Data not found',
+        }
+      } else {
+        throw err
+      }
     }
   }
 

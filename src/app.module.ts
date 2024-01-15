@@ -30,8 +30,8 @@ import { join } from 'path'
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'upload/photo-products'),
-      serveRoot: '/products/images',
+      rootPath: join(__dirname, '..', 'upload'),
+      serveRoot: '/images',
     }),
     LoggerModule.forRoot({
       pinoHttp: {
@@ -108,7 +108,7 @@ import { join } from 'path'
           entities: [],
           synchronize: configService.get<string>('env') === 'development',
           autoLoadEntities: true,
-          logging: false,
+          logging: ['query', 'error'],
           namingStrategy: new SnakeNamingStrategy(),
         }
       },

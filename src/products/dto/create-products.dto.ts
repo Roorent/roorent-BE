@@ -31,7 +31,8 @@ export class CreateProductsDTO {
   location: string
 
   @IsNotEmpty()
-  photo: string
+  @IsArray()
+  photo: string[]
 
   @IsNotEmpty()
   specifications: string
@@ -40,12 +41,12 @@ export class CreateProductsDTO {
   facilities: string
 
   @IsNotEmpty()
-  note: string
+  descriptions: string
 
   @IsNotEmpty()
   @IsEnum(GenderProduct)
   gender: GenderProduct
 
   @IsNotEmpty()
-  notes: string
+  rules: string
 }

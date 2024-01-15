@@ -24,14 +24,14 @@ export class ProductsController {
     private productsService: ProductsService, // private photoProductsService: PhotoProductsService
   ) {}
 
-  @Get('all-kos')
-  async getAllKos(@Query('page') page: number, @Query('limit') limit: number) {
-    const [data, count] = await this.productsService.findAllKos(page, limit)
+  @Get('all')
+  async getAll(@Query('type') type?: string) {
+    const [data, count] = await this.productsService.findAll(type)
 
     return {
+      count,
       statusCode: HttpStatusCode.Ok,
       message: 'success',
-      count,
       data,
     }
   }
@@ -148,22 +148,39 @@ export class ProductsController {
 
   @Get('/search')
   async listProductsWithSearch(
-    @Query('s') searchCriteria: string,
+    @Query('q') search?: string,
+    @Query('type') type?: string,
+    @Query('city') city?: string,
+    @Query('payment') payment?: string,
+    @Query('min') min?: string,
+    @Query('max') max?: string,
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('limit') limit: number = 9,
   ) {
-    return this.productsService.listProductsWithSearch(
-      searchCriteria,
+    const [data, count] = await this.productsService.listProductsWithSearch(
+      search,
+      type,
+      city,
+      payment,
+      min,
+      max,
       page,
       limit,
     )
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      count,
+      data,
+    }
   }
 
   @Get(':id')
   async getDetailById(@Param('id', ParseUUIDPipe) id: string) {
     return {
       statusCode: HttpStatus.OK,
-      message: 'succes',
+      message: 'Success',
       data: await this.productsService.findOneById(id),
     }
   }
@@ -178,7 +195,7 @@ export class ProductsController {
 
     return {
       statusCode: HttpStatus.OK,
-      message: 'succes',
+      message: 'Success',
       data,
     }
   }
@@ -193,9 +210,19 @@ export class ProductsController {
   }
 
   @Get('/find-owner/:id')
-  async getProductsByOwner(@Param('id', ParseUUIDPipe) id: string) {
+  async getProductsByOwner(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('type') type?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('status') status?: string,
+  ) {
     const [data, count]: any = await this.productsService.listProductsByOwner(
       id,
+      type,
+      page,
+      limit,
+      status,
     )
     return {
       statusCode: HttpStatus.OK,
@@ -205,10 +232,13 @@ export class ProductsController {
     }
   }
 
-  @Put('deactivate-owner/:id')
-  async deactivateOwnerProducts(@Param('id', ParseUUIDPipe) id: string) {
+  @Put('noactivate-products/:id')
+  async nonactivateOwnerProducts(@Param('id', ParseUUIDPipe) id: string) {
+    const data = await this.productsService.nonactivateProductOwner(id)
     return {
-      message: await this.productsService.deactivateProductOwner(id),
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data,
     }
   }
 }

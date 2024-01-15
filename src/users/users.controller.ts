@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
   Patch,
+  Search,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -21,10 +22,37 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('all-users')
+  async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+    const { count, userData } = await this.usersService.findAllUsers(
+      page,
+      limit,
+    )
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      count,
+      userData,
+    }
+  }
+
+  @Get('/search')
+  async listProductsWithSearch(
+    @Query('q') search: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.usersService.searchUsers(search, page, limit)
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async findAll(
     @Query('role') role?: string,
     @Query('status') status?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
     if (status && !role) {
       return {
@@ -39,7 +67,11 @@ export class UsersController {
       if (status) {
         ;[data, count] = await this.usersService.findOwnerByStatus(status, role)
       } else {
-        ;[data, count] = await this.usersService.findUsersByLevel(role)
+        ;[data, count] = await this.usersService.findUsersByLevel(
+          role,
+          page,
+          limit,
+        )
       }
     } else {
       ;[data, count] = await this.usersService.findAll()
@@ -50,14 +82,14 @@ export class UsersController {
       message: 'success',
       count,
       data,
+      page,
+      limit,
     }
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Put('/nonactive/:id')
-  async getNonactive(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  async getNonactive(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.usersService.getNonactive(id)
     return {
       statusCode: HttpStatus.OK,
@@ -81,12 +113,22 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get(':id')
+  @Get('/profile/:id')
+  async userProfile(@Param('id', ParseUUIDPipe) id: string) {
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success',
+      data: await this.usersService.userProfile(id),
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/byId/:id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
-      data: await this.usersService.findOne(id),
+      data: await this.usersService.findOwnerOne(id),
     }
   }
 
@@ -116,9 +158,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('approve/:id')
-  async approve(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  async approve(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.usersService.approveOwner(id)
     return {
       statusCode: HttpStatus.OK,
@@ -137,6 +177,20 @@ export class UsersController {
     return {
       statusCode: HttpStatus.OK,
       message: 'success',
+      data,
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/password/:id')
+  async updatePassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('password') password: string,
+  ) {
+    const data = await this.usersService.updatePassword(id, password)
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
       data,
     }
   }

@@ -27,6 +27,19 @@ export class AuthService {
 
   async register(payload: RegisterDTO) {
     try {
+      const existingEmail:any = await this.usersRepository.findOne({ 
+        where: { email: payload.email} 
+      });
+      if (existingEmail) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'Email sudah terdaftar',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+
       if (!['owner', 'renter'].includes(payload.level)) {
         throw new BadRequestException('Invalid, role not specified.')
       }
@@ -98,20 +111,19 @@ export class AuthService {
         throw new HttpException(
           {
             statusCode: HttpStatus.BAD_REQUEST,
-            error: 'Email is invalid',
+            error: 'Email salah',
           },
           HttpStatus.BAD_REQUEST,
-          )
-        }
-        if (userOne.biodata.isActive == 'active') {
-
+        )
+      }
+      if (userOne.biodata.isActive == 'active') {
         const isMatch = await bcrypt.compare(payload.password, userOne.password)
 
         if (!isMatch) {
           throw new HttpException(
             {
               statusCode: HttpStatus.BAD_REQUEST,
-              error: 'password is invalid',
+              error: 'password salah',
             },
             HttpStatus.BAD_REQUEST,
           )
@@ -121,11 +133,18 @@ export class AuthService {
           id: userOne.id,
           role: userOne.level.name,
           firstname: userOne.biodata.first_name,
+          photo: userOne.biodata.photo_profile,
         }
 
         return { access_token: await this.jwtService.sign(datas) }
       } else {
-        return 'Akun anda tidak aktif, silahkan hubungi admin'
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            error: 'Akun anda tidak aktif, silahkan hubungi admin',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
       }
     } catch (err) {
       throw err

@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { PhotoProducts } from './entities/photo_products.entity'
 import { EntityNotFoundError, Repository } from 'typeorm'
+import * as fs from 'fs/promises'
+import * as path from 'path'
 import { ProductsService } from '#/products/products.service'
 import { CreatePhotoProductsDTO } from './dto/create-photo_products.dto'
 import { UpdatePhotoProductsDTO } from './dto/update-photo_products.dto'
@@ -51,19 +53,24 @@ export class PhotoProductsService {
         payload.product_id,
       )
 
-      const photoProductsEntity = new PhotoProducts()
-
-      photoProductsEntity.photo = payload.photo
-      photoProductsEntity.products = findOneProductId
-
-      const insertPhotoProducts = await this.photoProductsRepository.insert(
-        photoProductsEntity,
-      )
-      return await this.photoProductsRepository.findOneOrFail({
-        where: {
-          id: insertPhotoProducts.identifiers[0].id,
-        },
+      
+      payload.photo.forEach(async (item) => {
+        const photoProductsEntity = new PhotoProducts()
+        photoProductsEntity.photo = item
+        photoProductsEntity.products = findOneProductId
+        await this.photoProductsRepository.insert(photoProductsEntity)
       })
+
+      // const insertPhotoProducts = await this.photoProductsRepository.insert(
+      //   photoProductsEntity,
+      // )
+      // return await this.photoProductsRepository.findOneOrFail({
+      //   where: {
+      //     id: insertPhotoProducts.identifiers[0].id,
+      //   },
+      // })
+
+      return this.findAll
     } catch (err) {
       throw err
     }
@@ -74,8 +81,9 @@ export class PhotoProductsService {
       await this.findOneById(id)
 
       const photoProductsEntity = new PhotoProducts()
-      photoProductsEntity.photo = payload.photo
-
+      payload.photo.forEach(async (item) => {
+        photoProductsEntity.photo = item
+      })
       await this.photoProductsRepository.update(id, photoProductsEntity)
 
       return await this.photoProductsRepository.findOneOrFail({
@@ -91,10 +99,46 @@ export class PhotoProductsService {
   async softDeleteById(id: string) {
     try {
       await this.findOneById(id)
-
       await this.photoProductsRepository.softDelete(id)
 
-      return 'Success'
+      return 'Success delete photo product'
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async deletePhotoByName(fileName: string) {
+    const filePath = `upload/photo-products/${fileName}`
+
+    try {
+      await fs.unlink(filePath)
+      return 'Success delete file photo product'
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async deleteInvalidFiles() {
+    const directoryPath = 'upload/photo-products'
+
+    try {
+      const photos = await this.photoProductsRepository.find()
+      const validFilePhotoProducts = photos.map((item) => item.photo)
+
+      const files = await fs.readdir(directoryPath)
+      const invalidFiles = files.filter(
+        (file) => !validFilePhotoProducts.includes(file),
+      )
+
+      const deletedFiles = await Promise.all(
+        invalidFiles.map(async (file) => {
+          const filePath = path.join(directoryPath, file)
+          await fs.unlink(filePath)
+          return file
+        }),
+      )
+
+      return `File ${deletedFiles} berhasil dihapus.`
     } catch (err) {
       throw err
     }
