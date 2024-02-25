@@ -49,7 +49,7 @@ $ yarn start:prod
 ## Team
 
 - [Fauzi Rahman Dhani](https://github.com/Fauzi0309)
-- [Mohamad Wildan Maulana](https://github.com/maulanadata)
+- [Mohamad Wildan Maulana](https://github.com/molasecdev)
 - [Muhammad Danar Kahfi](https://github.com/DanarKahfi)
 
 ## License
